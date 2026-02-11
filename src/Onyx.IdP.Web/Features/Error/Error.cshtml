@@ -1,0 +1,13 @@
+@{
+    ViewData["Title"] = "Error";
+    Layout = "_Layout";
+}
+
+<div class="error-container">
+    <h1 class="error-code text-danger">Error</h1>
+    <h2 class="error-title">Something went wrong</h2>
+    <p class="error-description">
+        An unexpected error occurred. Please try again later.
+    </p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">Back to Home</a>
+</div>

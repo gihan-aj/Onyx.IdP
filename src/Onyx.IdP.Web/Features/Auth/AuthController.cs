@@ -27,6 +27,10 @@ public class AuthController : Controller
     [HttpGet]
     public IActionResult Register(string? returnUrl = null)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction("Index", "Home");
+        }
         ViewData["ReturnUrl"] = returnUrl;
         return View();
     }
@@ -62,7 +66,7 @@ public class AuthController : Controller
                 await _emailSender.SendEmailAsync(model.Email, "Confirm your email",
                     $"Please confirm your account by <a href='{callbackUrl}'>clicking here</a>.");
                 
-                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                if (_userManager.Options.SignIn.RequireConfirmedAccount || _userManager.Options.SignIn.RequireConfirmedEmail)
                 {
                     return RedirectToAction(nameof(Confirmation));
                 }
@@ -85,6 +89,10 @@ public class AuthController : Controller
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction("Index", "Home");
+        }
         ViewData["ReturnUrl"] = returnUrl;
         return View();
     }
@@ -111,6 +119,12 @@ public class AuthController : Controller
             {
                 _logger.LogWarning("User account locked out.");
                 return RedirectToAction("Lockout");
+            }
+            if (result.IsNotAllowed)
+            {
+                _logger.LogWarning("User account is not allowed to login (likely unconfirmed email).");
+                ModelState.AddModelError(string.Empty, "Please confirm your email address.");
+                return View(model);
             }
             else
             {
@@ -166,5 +180,11 @@ public class AuthController : Controller
         }
 
         return View("Error");
+    }
+
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
     }
 }

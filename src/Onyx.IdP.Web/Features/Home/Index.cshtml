@@ -1,48 +1,32 @@
-@page "/"
-@model Onyx.IdP.Web.Features.Home.IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Home Page";
 }
 
 <div class="hero">
-    <h1 class="hero-title">Secure Identity Management<br>Reimagined</h1>
+    <h1 class="hero-title">Welcome Back</h1>
     <p class="hero-subtitle">
-        A modern, secure, and flexible Identity Provider for your applications.
-        Built with performance and developer experience in mind.
+        You have successfully logged in to the Onyx Identity Provider.
     </p>
     <div>
-        <a asp-page="/Auth/Login" class="btn btn-primary">Get Started</a>
-        <a href="https://github.com/onyx-idp" class="btn btn-ghost">View on GitHub</a>
+        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+            <button type="submit" class="btn btn-primary">Logout</button>
+        </form>
     </div>
 </div>
 
 <div class="features-grid">
     <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h3 class="feature-title">Secure by Design</h3>
+        <div class="feature-icon">👤</div>
+        <h3 class="feature-title">Profile</h3>
         <p class="feature-description">
-            Built on industry-standard protocols like OpenID Connect and OAuth 2.0 to ensure your data remains safe.
+            View and manage your personal information.
         </p>
     </div>
     <div class="feature-card">
-        <div class="feature-icon">🚀</div>
-        <h3 class="feature-title">High Performance</h3>
+        <div class="feature-icon">🛡️</div>
+        <h3 class="feature-title">Security</h3>
         <p class="feature-description">
-            Optimized for speed and reliability, ensuring seamless authentication experiences for your users.
-        </p>
-    </div>
-    <div class="feature-card">
-        <div class="feature-icon">🎨</div>
-        <h3 class="feature-title">Modern UI/UX</h3>
-        <p class="feature-description">
-            Beautifully designed interfaces that are easy to customize and integrate into your brand.
-        </p>
-    </div>
-    <div class="feature-card">
-        <div class="feature-icon">🧩</div>
-        <h3 class="feature-title">Extensible</h3>
-        <p class="feature-description">
-            Vertical Slice Architecture makes it easy to add new features and maintain code quality.
+            Update your password and security settings.
         </p>
     </div>
 </div>

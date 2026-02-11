@@ -1,0 +1,13 @@
+@{
+    ViewData["Title"] = "Not Found";
+    Layout = "_Layout";
+}
+
+<div class="error-container">
+    <h1 class="error-code">404</h1>
+    <h2 class="error-title">Page Not Found</h2>
+    <p class="error-description">
+        Oops! The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+    </p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">Back to Home</a>
+</div>

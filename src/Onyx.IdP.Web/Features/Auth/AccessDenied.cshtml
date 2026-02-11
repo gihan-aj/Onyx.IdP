@@ -1,0 +1,13 @@
+@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-header">
+    <h1 class="auth-title text-danger">Access Denied</h1>
+    <p class="auth-subtitle">You do not have permission to access this resource.</p>
+</div>
+
+<div class="text-center mt-4">
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Go to Home</a>
+</div>

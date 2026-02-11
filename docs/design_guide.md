@@ -67,3 +67,26 @@ We use a simplified custom grid system:
     <input type="email" id="email" class="form-control" />
 </div>
 ```
+
+## Development Guidelines
+
+### 1. Unified Styling Source
+- ALL custom styles must be defined in `wwwroot/css/site.css`.
+- **Do not** use inline styles (`style="..."`) or `<style>` blocks within Views unless absolutely necessary for dynamic values.
+
+### 2. Reuse Existing Utilities
+- Before creating a new class, check `site.css` for existing utility classes.
+- Common utilities available:
+    - Margins: `.mt-4`, `.mt-5`, `.mb-3`, `.mb-4`, `.mb-5`
+    - Typography: `.text-center`, `.text-muted`, `.text-danger`, `.display-1`, `.lead`, `.small`, `.font-weight-bold`
+    - Navigation: `.d-inline`, `.me-3`
+
+### 3. Creating New Styles
+- If no existing utility fits, create a new semantic class in `site.css`.
+- **Naming Convention**: Use **kebab-case** (e.g., `.error-container`, `.feature-card`).
+- **Grouping**: Group related styles together in `site.css` (e.g., all "Error Pages" styles together).
+
+### 4. Component-Based Approach
+- Styles should be reusable components where possible.
+- Example: Instead of styling a specific `div` on the error page, create a `.error-container` component that can be reused on any error-like page (as done for `Error.cshtml` and `NotFound.cshtml`).
+
