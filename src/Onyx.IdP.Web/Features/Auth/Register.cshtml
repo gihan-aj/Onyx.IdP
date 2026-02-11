@@ -1,0 +1,53 @@
+@model Onyx.IdP.Web.Features.Auth.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-header">
+    <h1 class="auth-title">Create an Account</h1>
+    <p class="auth-subtitle">Enter your details to register</p>
+</div>
+
+<form asp-controller="Auth" asp-action="Register" method="post" class="auth-form">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    
+    <div class="row">
+        <div class="col-md-6 form-group">
+            <label asp-for="FirstName" class="form-label"></label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6 form-group">
+            <label asp-for="LastName" class="form-label"></label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger small"></span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Password" class="form-label"></label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger small"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ConfirmPassword" class="form-label"></label>
+        <input asp-for="ConfirmPassword" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+    
+    <div class="auth-footer">
+        <span class="text-muted">Already have an account?</span>
+        <a asp-controller="Auth" asp-action="Login" class="font-weight-bold">Sign in</a>
+    </div>
+</form>

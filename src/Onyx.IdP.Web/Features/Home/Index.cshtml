@@ -1,0 +1,48 @@
+@page "/"
+@model Onyx.IdP.Web.Features.Home.IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="hero">
+    <h1 class="hero-title">Secure Identity Management<br>Reimagined</h1>
+    <p class="hero-subtitle">
+        A modern, secure, and flexible Identity Provider for your applications.
+        Built with performance and developer experience in mind.
+    </p>
+    <div>
+        <a asp-page="/Auth/Login" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/onyx-idp" class="btn btn-ghost">View on GitHub</a>
+    </div>
+</div>
+
+<div class="features-grid">
+    <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3 class="feature-title">Secure by Design</h3>
+        <p class="feature-description">
+            Built on industry-standard protocols like OpenID Connect and OAuth 2.0 to ensure your data remains safe.
+        </p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🚀</div>
+        <h3 class="feature-title">High Performance</h3>
+        <p class="feature-description">
+            Optimized for speed and reliability, ensuring seamless authentication experiences for your users.
+        </p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3 class="feature-title">Modern UI/UX</h3>
+        <p class="feature-description">
+            Beautifully designed interfaces that are easy to customize and integrate into your brand.
+        </p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🧩</div>
+        <h3 class="feature-title">Extensible</h3>
+        <p class="feature-description">
+            Vertical Slice Architecture makes it easy to add new features and maintain code quality.
+        </p>
+    </div>
+</div>

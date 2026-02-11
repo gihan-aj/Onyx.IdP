@@ -1,0 +1,33 @@
+@model Onyx.IdP.Web.Features.Auth.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-header">
+    <h1 class="auth-title">Welcome Back</h1>
+    <p class="auth-subtitle">Sign in to your account to continue</p>
+</div>
+
+<form method="post" class="auth-form">
+    <div class="form-group">
+        <label asp-for="Email" class="form-label">Email Address</label>
+        <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+    </div>
+    
+    <div class="form-group">
+        <div class="form-header">
+            <label asp-for="Password" class="form-label">Password</label>
+            <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+        <input asp-for="Password" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%">Sign In</button>
+    
+    <div class="auth-footer">
+        <span class="text-muted">Don't have an account?</span>
+        <a asp-controller="Auth" asp-action="Register" class="font-weight-bold">Sign up</a>
+    </div>
+</form>
+

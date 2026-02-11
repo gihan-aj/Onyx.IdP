@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Onyx Identity</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="nav-container">
+            <a class="brand" asp-area="" asp-page="/Home/Index">
+                <span>ONYX IDENTITY</span>
+            </a>
+            <nav class="nav-links">
+                <a class="nav-link" asp-area="" asp-page="/Home/Index">Home</a>
+                <a class="nav-link" href="#">Privacy</a>
+            </nav>
+            <div class="nav-actions">
+               <a class="btn btn-primary" asp-controller="Auth" asp-action="Login">Sign In</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            &copy; 2026 - Onyx Identity - <a href="#">Privacy</a>
+        </div>
+    </footer>
+
+    @* <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false) *@
+</body>
+</html>

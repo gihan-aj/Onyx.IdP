@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/docs/" />
+  <Folder Name="/src/">
+    <Project Path="src/Onyx.IdP.Core/Onyx.IdP.Core.csproj" Id="7e5b0ec5-0933-4e26-8c09-d5876c90b1c4" />
+    <Project Path="src/Onyx.IdP.Infrastructure/Onyx.IdP.Infrastructure.csproj" Id="83912a8c-0781-4729-9412-11d489c233ba" />
+    <Project Path="src/Onyx.IdP.Web/Onyx.IdP.Web.csproj" Id="efd97489-89ff-4d5d-9774-4c176a2289e7" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>

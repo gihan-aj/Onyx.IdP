@@ -1,0 +1,6 @@
+@Onyx.IdP.Web_HostAddress = http://localhost:5256
+
+GET {{Onyx.IdP.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
