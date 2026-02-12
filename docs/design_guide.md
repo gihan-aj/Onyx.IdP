@@ -52,11 +52,22 @@ We use a simplified custom grid system:
 - `.text-center`: Center-aligned text.
 - `.justify-content-center`: Center flex items.
 
+### Alerts (Status Messages)
+
+Use alerts to display success or error messages to the user.
+
+- `.alert`: Base class for alerts. Adds padding and border radius.
+- `.alert-success`: Green background/text for success messages.
+- `.alert-danger`: Red background/text for error messages.
+
 ### Authentication Views
 
-- `.auth-container`: Centered flex container for auth pages.
+- `.auth-container`: Centered flex container for auth pages (used in `_AuthLayout`).
+- `.auth-wrapper`: Wrapper for auth content within the main layout (e.g., Profile page).
 - `.auth-card`: White/Surface colored card with shadow.
 - `.auth-header`: Center-aligned title and subtitle area.
+- `.auth-actions`: Container for secondary actions (links) below the main form.
+- `.auth-link`: Styled link for auth actions.
 - `.auth-footer`: Bottom section for secondary actions (e.g., "Sign up").
 
 ## Usage Example

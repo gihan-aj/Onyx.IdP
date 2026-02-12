@@ -1,0 +1,55 @@
+@using Microsoft.AspNetCore.Identity
+@using Onyx.IdP.Core.Entities
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin - Onyx Identity</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span>ONYX ADMIN</span>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="sidebar-link active" asp-controller="Roles" asp-action="Index">
+                    <span class="icon">🛡️</span> Roles
+                </a>
+                <!-- Add more admin links here -->
+            </nav>
+        </aside>
+        
+        <div class="admin-content-wrapper">
+            <header class="admin-header">
+                <div class="header-content">
+                    <h1 class="page-title">@ViewData["Title"]</h1>
+                    <div class="header-actions">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <span class="admin-user">@User.Identity?.Name</span>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline btn-sm">Exit Admin</a>
+                        }
+                    </div>
+                </div>
+            </header>
+
+            <main class="admin-main">
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    </div>
+
+    @* <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false) *@
+</body>
+</html>

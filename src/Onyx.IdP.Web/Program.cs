@@ -30,6 +30,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
 {
     options.ViewLocationFormats.Clear();
     options.ViewLocationFormats.Add("/Features/{1}/{0}.cshtml");
+    options.ViewLocationFormats.Add("/Features/Admin/{1}/{0}.cshtml");
     options.ViewLocationFormats.Add("/Features/Shared/{0}.cshtml");
     options.ViewLocationFormats.Add("/Views/Shared/{0}.cshtml");
 });

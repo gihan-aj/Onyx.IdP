@@ -24,15 +24,19 @@
             <div class="nav-actions">
                 @if (SignInManager.IsSignedIn(User))
                 {
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="nav-link d-inline me-3" asp-controller="Roles" asp-action="Index">Admin</a>
+                    }
                     <a class="nav-link d-inline me-3" asp-controller="Profile" asp-action="Index">Hello, @User.Identity?.Name!</a>
                     <form asp-controller="Auth" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-outline">Logout</button>
+                        <button type="submit" class="btn btn-outline btn-md">Logout</button>
                     </form>
                 }
                 else
                 {
                     <a class="nav-link" asp-controller="Auth" asp-action="Register">Register</a>
-                    <a class="btn btn-primary" asp-controller="Auth" asp-action="Login">Sign In</a>
+                    <a class="btn btn-primary btn-md" asp-controller="Auth" asp-action="Login">Sign In</a>
                 }
             </div>
         </div>

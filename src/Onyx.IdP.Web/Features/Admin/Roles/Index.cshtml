@@ -1,0 +1,117 @@
+@model Onyx.IdP.Web.Features.Admin.Roles.RolesViewModel
+@{
+    ViewData["Title"] = "Roles";
+    Layout = "_AdminLayout";
+}
+
+<div class="data-table-container">
+    <div class="table-controls">
+        <form asp-action="Index" method="get" class="search-box">
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Search roles..." />
+            <input type="hidden" name="sortColumn" value="@Model.SortColumn" />
+            <input type="hidden" name="sortDirection" value="@Model.SortDirection" />
+        </form>
+        <div class="table-actions">
+            <a href="#" class="btn btn-primary btn-md">
+                + New Role
+            </a>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>
+                    <a asp-action="Index" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-sortColumn="Name" 
+                       asp-route-sortDirection="@(Model.SortColumn == "Name" && Model.SortDirection == "asc" ? "desc" : "asc")">
+                        Name
+                        @if (Model.SortColumn == "Name")
+                        {
+                            <span>@(Model.SortDirection == "asc" ? "↑" : "↓")</span>
+                        }
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-sortColumn="Description" 
+                       asp-route-sortDirection="@(Model.SortColumn == "Description" && Model.SortDirection == "asc" ? "desc" : "asc")">
+                        Description
+                        @if (Model.SortColumn == "Description")
+                        {
+                            <span>@(Model.SortDirection == "asc" ? "↑" : "↓")</span>
+                        }
+                    </a>
+                </th>
+                <th>Users</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Roles.Any())
+            {
+                foreach (var role in Model.Roles)
+                {
+                    <tr>
+                        <td>
+                            <span class="font-weight-bold">@role.Name</span>
+                        </td>
+                        <td>@role.Description</td>
+                        <td>
+                            <span class="badge badge-primary">@role.UserCount Users</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-ghost btn-sm">Edit</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center py-4">
+                        <span class="text-muted">No roles found.</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="table-pagination">
+        @if (Model.HasPreviousPage)
+        {
+            <a asp-action="Index" 
+               asp-route-page="@(Model.Page - 1)" 
+               asp-route-searchTerm="@Model.SearchTerm" 
+               asp-route-sortColumn="@Model.SortColumn" 
+               asp-route-sortDirection="@Model.SortDirection" 
+               class="page-link">
+                Previous
+            </a>
+        }
+        else
+        {
+            <span class="page-link disabled">Previous</span>
+        }
+
+        <span class="text-muted small">Page @Model.Page of @Model.TotalPages</span>
+
+        @if (Model.HasNextPage)
+        {
+            <a asp-action="Index" 
+               asp-route-page="@(Model.Page + 1)" 
+               asp-route-searchTerm="@Model.SearchTerm" 
+               asp-route-sortColumn="@Model.SortColumn" 
+               asp-route-sortDirection="@Model.SortDirection" 
+               class="page-link">
+                Next
+            </a>
+        }
+        else
+        {
+            <span class="page-link disabled">Next</span>
+        }
+    </div>
+</div>

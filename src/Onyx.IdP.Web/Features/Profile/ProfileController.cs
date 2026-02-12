@@ -30,11 +30,11 @@ public class ProfileController : Controller
 
         var model = new ProfileViewModel
         {
-            Username = user.UserName,
-            Email = user.Email,
+            Username = user.UserName!,
+            Email = user.Email!,
             PhoneNumber = user.PhoneNumber,
-            FirstName = user.FirstName,
-            LastName = user.LastName
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty
         };
 
         return View(model);
@@ -52,8 +52,8 @@ public class ProfileController : Controller
 
         if (!ModelState.IsValid)
         {
-            model.Username = user.UserName;
-            model.Email = user.Email;
+            model.Username = user.UserName!;
+            model.Email = user.Email!;
             return View(model);
         }
 
