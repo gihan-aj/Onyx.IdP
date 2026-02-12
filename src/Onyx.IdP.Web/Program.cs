@@ -8,6 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCoreServices();
 builder.Services.AddInfrastructureServices(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
+// Configure Email Settings
+builder.Services.Configure<Onyx.IdP.Core.Settings.EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+// Register RazorViewToStringRenderer
+builder.Services.AddTransient<Onyx.IdP.Web.Services.IRazorViewToStringRenderer, Onyx.IdP.Web.Services.RazorViewToStringRenderer>();
+
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(options =>
 {

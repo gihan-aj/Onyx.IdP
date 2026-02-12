@@ -37,7 +37,7 @@ public static class DependencyInjection
                        .UseDbContext<ApplicationDbContext>();
             });
 
-        services.AddTransient<IEmailSender, EmailSender>();
+        services.AddTransient<IEmailSender, MailKitEmailSender>();
         services.AddTransient<DataSeeder>();
 
         return services;

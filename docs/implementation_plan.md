@@ -1,90 +1,83 @@
-# Identity Provider Implementation Plan
+# Email Confirmation Flow Implementation Plan
 
-The goal is to implement an Identity Provider (IdP) using OpenIddict and ASP.NET Core Identity. This IdP will manage users, roles, and permissions, and issue tokens for other applications. We will follow a layered architecture with separate Core and Infrastructure projects.
+The goal is to implement a functional email confirmation flow using an SMTP server (specifically Google's SMTP with App Password) and a professional Razor-based email template.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> We will be using SQL Server for the database.
-> Connection String: `Server=gihan-aj-dsktp;Database=OnyxIdP;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True`
+> **External Dependencies**: We will be using `MailKit` and `MimeKit` for sending emails.
+> **Status**: User confirmed packages are installed.
 
-## Required Packages (User Confirmed Installed)
+> [!NOTE]
+> **Configuration**: You will need to provide your Google App Password.
+> **Status**: User requested instructions for User Secrets.
 
-### Onyx.IdP.Core
-- `Microsoft.Extensions.Identity.Stores`
-
-### Onyx.IdP.Infrastructure
-- `Microsoft.AspNetCore.Identity.EntityFrameworkCore`
-- `Microsoft.EntityFrameworkCore.SqlServer`
-- `OpenIddict.EntityFrameworkCore`
-
-### Onyx.IdP.Web
-- `Microsoft.EntityFrameworkCore.Tools`
-- `OpenIddict.AspNetCore`
-- `OpenIddict.Quartz` (Recommended for token cleanup)
-- `Quartz.Extensions.Hosting`
+## Configuration Guide: User Secrets
+To keep your credentials safe, right-click on the `Onyx.IdP.Web` project in Visual Studio and select **"Manage User Secrets"**.
+Allowed structure:
+```json
+{
+  "EmailSettings": {
+    "Server": "smtp.gmail.com",
+    "Port": 587,
+    "SenderName": "Onyx Identity",
+    "SenderEmail": "your-email@gmail.com",
+    "Username": "your-email@gmail.com",
+    "Password": "YOUR_APP_PASSWORD_HERE"
+  }
+}
+```
 
 ## Proposed Changes
 
 ### Core Layer (Onyx.IdP.Core)
 
-#### [NEW] [ApplicationUser.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Core/Entities/ApplicationUser.cs)
-- Create a custom user entity inheriting from `IdentityUser`.
-- Add properties: `FirstName`, `LastName`.
-
-#### [NEW] [ApplicationRole.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Core/Entities/ApplicationRole.cs)
-- Create a custom role entity inheriting from `IdentityRole`.
-- Add property: `Description`.
-
-#### [NEW] [IEmailSender.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Core/Interfaces/IEmailSender.cs)
-- Define email sender interface.
-
-#### [NEW] [DependencyInjection.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Core/DependencyInjection.cs)
-- Extension method to register Core services.
+#### [NEW] [EmailSettings.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Core/Settings/EmailSettings.cs)
+- Define a class to hold SMTP configuration.
 
 ### Infrastructure Layer (Onyx.IdP.Infrastructure)
 
-#### [NEW] [ApplicationDbContext.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Infrastructure/Data/ApplicationDbContext.cs)
-- Create the database context inheriting from `IdentityDbContext`.
-- Configure OpenIddict entities.
+#### [NEW] [MailKitEmailSender.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Infrastructure/Services/MailKitEmailSender.cs)
+- **New Class**: Implementation of `IEmailSender` using `MailKit`.
+- Inject `IOptions<EmailSettings>` and `ILogger<MailKitEmailSender>`.
+- Implement `SendEmailAsync` to connect to the SMTP server and send the email.
 
-#### [NEW] [EmailSender.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Infrastructure/Services/EmailSender.cs)
-- Implement `IEmailSender` (log to console for dev).
-
-#### [NEW] [DataSeeder.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Infrastructure/Data/DataSeeder.cs)
-- Seed default roles (Admin, User).
-- Seed default admin user.
-- Seed OpenIddict client applications:
-    - **Postman**: ClientId=`postman`, ClientSecret=`postman-secret`, AllowedGrantTypes=`client_credentials`, `authorization_code`, `refresh_token`.
-
-#### [NEW] [DependencyInjection.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Infrastructure/DependencyInjection.cs)
-- Extension method to register Infrastructure services (DbContext, Identity, OpenIddict).
+#### [MODIFY] [DependencyInjection.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Infrastructure/DependencyInjection.cs)
+- Register `MailKitEmailSender` as the implementation for `IEmailSender`.
+- *Note: We will remove the registration for the old `EmailSender` or just swap them.*
 
 ### Web Layer (Onyx.IdP.Web)
 
+#### [NEW] [RazorViewToStringRenderer.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Web/Services/RazorViewToStringRenderer.cs)
+- A dedicated service to render `.cshtml` views into string HTML.
+
+#### [NEW] [EmailConfirmationTemplate.cshtml](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Web/Views/Shared/EmailTemplates/EmailConfirmationTemplate.cshtml)
+- A professional, responsive HTML email template.
+- Will accept a functional model (e.g., `ConfirmationEmailViewModel`).
+
+#### [MODIFY] [AuthController.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Web/Features/Auth/AuthController.cs)
+- Inject `RazorViewToStringRenderer`.
+- In `Register` action:
+    - Generate the confirmation token and link.
+    - Render the `EmailConfirmationTemplate` with the link.
+    - Call `_emailSender.SendEmailAsync` with the rendered HTML.
+
+#### [MODIFY] [appsettings.json](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Web/appsettings.json)
+- Add `EmailSettings` section with placeholders (for structure reference).
+
 #### [MODIFY] [Program.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Web/Program.cs)
-- Call `AddCoreServices` and `AddInfrastructureServices`.
-- Configure the HTTP request pipeline.
-- Run data seeding on startup.
-
-### Registration Feature
-
-#### [NEW] [Register.cshtml](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Web/Features/Auth/Register.cshtml)
-- Create the registration view using MVC patterns.
-
-#### [NEW] [RegisterController.cs](file:///c:/Users/gihan/source/repos/Onyx.IdP/src/Onyx.IdP.Web/Features/Auth/RegisterController.cs)
-- Handle user registration logic.
-- Assign default role to new users.
-- Generate email confirmation token.
+- Register `EmailSettings` configuration.
+- Register `RazorViewToStringRenderer` as a transient service.
 
 ## Verification Plan
 
-### Automated Tests
-- Integration tests for registration flow.
-
 ### Manual Verification
-- Run the application and navigate to the registration page.
-- Register a new user with First Name and Last Name.
-- Verify user creation in SQL Server database.
-- Check console logs for email confirmation.
-- (Later) Use Postman to test OpenIddict endpoints using the seeded client.
+1.  **Configuration**: Add User Secrets as described above.
+2.  **Execution**:
+    - Run the application.
+    - Navigate to `/Auth/Register`.
+    - Register a new user.
+3.  **Observation**:
+    - Check the inbox of the registered email.
+    - Verify the email is received and styled correctly.
+    - Click the link and verify confirmation.

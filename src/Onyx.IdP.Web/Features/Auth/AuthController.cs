@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Onyx.IdP.Core.Entities;
 using Onyx.IdP.Core.Interfaces;
+using Onyx.IdP.Web.Services;
+
 
 namespace Onyx.IdP.Web.Features.Auth;
 
@@ -10,18 +12,24 @@ public class AuthController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmailSender _emailSender;
+    private readonly IRazorViewToStringRenderer _razorViewToStringRenderer;
     private readonly ILogger<AuthController> _logger;
+
 
     public AuthController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
         IEmailSender emailSender,
+        IRazorViewToStringRenderer razorViewToStringRenderer,
         ILogger<AuthController> logger)
+
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _emailSender = emailSender;
+        _razorViewToStringRenderer = razorViewToStringRenderer;
         _logger = logger;
+
     }
 
     [HttpGet]
@@ -61,10 +69,11 @@ public class AuthController : Controller
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 // In a real app, generate a callback URL and send email
                 // For now, we just log it or simulate sending
-                var callbackUrl = Url.Action("ConfirmEmail", "Register", new { userId = user.Id, code = code }, protocol: Request.Scheme);
+                var callbackUrl = Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, code = code }, protocol: Request.Scheme);
                 
-                await _emailSender.SendEmailAsync(model.Email, "Confirm your email",
-                    $"Please confirm your account by <a href='{callbackUrl}'>clicking here</a>.");
+                var emailBody = await _razorViewToStringRenderer.RenderViewToStringAsync("EmailTemplates/EmailConfirmationTemplate", callbackUrl);
+                await _emailSender.SendEmailAsync(model.Email, "Confirm your email", emailBody);
+
                 
                 if (_userManager.Options.SignIn.RequireConfirmedAccount || _userManager.Options.SignIn.RequireConfirmedEmail)
                 {
