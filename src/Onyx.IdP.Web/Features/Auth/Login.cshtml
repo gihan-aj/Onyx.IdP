@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Login";
     Layout = "_AuthLayout";
+    ViewData["AuthCardClass"] = "auth-card-sm";
 }
 
 <div class="auth-header">
@@ -19,7 +20,7 @@
     <div class="form-group">
         <div class="form-header">
             <label asp-for="Password" class="form-label">Password</label>
-            <a href="#" class="forgot-password">Forgot password?</a>
+            <a asp-action="ForgotPassword" class="forgot-password">Forgot password?</a>
         </div>
         <input asp-for="Password" class="form-control" />
     </div>

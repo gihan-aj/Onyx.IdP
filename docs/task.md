@@ -8,5 +8,8 @@
     - [x] Configure OpenIddict <!-- id: 5 -->
     - [x] Implement User Registration <!-- id: 6 -->
     - [x] Implement Email Confirmation <!-- id: 7 -->
+    - [x] Implement Forgot/Reset Password Flow <!-- id: 10 -->
+    - [ ] Implement User Profile (Change Password) <!-- id: 11 -->
 - [ ] Verification Phase <!-- id: 8 -->
     - [ ] Verify Registration Flow <!-- id: 9 -->
+
