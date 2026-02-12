@@ -24,7 +24,7 @@
             <div class="nav-actions">
                 @if (SignInManager.IsSignedIn(User))
                 {
-                    <span class="nav-text me-3">Hello, @User.Identity?.Name!</span>
+                    <a class="nav-link d-inline me-3" asp-controller="Profile" asp-action="Index">Hello, @User.Identity?.Name!</a>
                     <form asp-controller="Auth" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="d-inline">
                         <button type="submit" class="btn btn-outline">Logout</button>
                     </form>

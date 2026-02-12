@@ -1,0 +1,61 @@
+@model Onyx.IdP.Web.Features.Profile.ProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+    ViewData["ActivePage"] = "Profile";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">@ViewData["Title"]</h1>
+            <p class="auth-subtitle">Manage your account settings</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            var statusMessageClass = Model.StatusMessage.StartsWith("Error") ? "danger" : "success";
+            <div class="alert alert-@statusMessageClass mb-4" role="alert">
+                @Model.StatusMessage
+            </div>
+        }
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors" role="alert"></div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Username" class="form-control" disabled />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" disabled />
+            </div>
+
+            <div class="form-floating mb-3">
+                <label asp-for="FirstName" class="form-label"></label>
+                <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <label asp-for="LastName" class="form-label"></label>
+                <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <label asp-for="PhoneNumber" class="form-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" placeholder="Phone Number" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <button id="update-profile-button" type="submit" class="btn btn-primary w-100">Save</button>
+        </form>
+
+        <div class="auth-actions mt-3">
+            <a asp-action="ChangePassword" class="auth-link">Change Password</a>
+        </div>
+    </div>
+</div>
+
