@@ -179,4 +179,61 @@ public class RolesController : Controller
 
         return View(model);
     }
+
+    [HttpGet("Delete/{id}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var role = await _roleManager.FindByIdAsync(id);
+        if (role == null)
+        {
+            return NotFound();
+        }
+
+        var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
+
+        return View(new DeleteRoleViewModel
+        {
+            Id = role.Id,
+            Name = role.Name!,
+            UserCount = usersInRole.Count
+        });
+    }
+
+    [HttpPost("Delete/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(string id, DeleteRoleViewModel model)
+    {
+        var role = await _roleManager.FindByIdAsync(id);
+        if (role == null)
+        {
+            return NotFound();
+        }
+
+        if (model.UnassignUsers)
+        {
+            var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
+            foreach (var user in usersInRole)
+            {
+                await _userManager.RemoveFromRoleAsync(user, role.Name!);
+            }
+        }
+
+        var result = await _roleManager.DeleteAsync(role);
+        if (result.Succeeded)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        // Re-fetch user count for view
+        var currentUsers = await _userManager.GetUsersInRoleAsync(role.Name!);
+        model.UserCount = currentUsers.Count;
+        model.Name = role.Name!;
+
+        return View(model);
+    }
 }

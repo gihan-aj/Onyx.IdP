@@ -63,7 +63,10 @@
                             <span class="badge badge-primary">@role.UserCount Users</span>
                         </td>
                         <td>
-                            <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-ghost btn-sm">Edit</a>
+                            <div class="d-flex gap-2">
+                                <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-ghost btn-sm">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@role.Id" class="btn btn-ghost btn-sm text-danger">Delete</a>
+                            </div>
                         </td>
                     </tr>
                 }

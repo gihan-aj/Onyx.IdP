@@ -237,6 +237,13 @@ a:hover {
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
 .form-header {
     display: flex;
     justify-content: space-between;
@@ -403,7 +410,7 @@ a:hover {
 .text-danger {
     color: #ef4444 !important;
     /* Tailwind red-500 equivalent */
-    font-size: 0.875rem;
+/*    font-size: 0.875rem;*/
 }
 
 .text-center {
@@ -414,7 +421,8 @@ a:hover {
     font-weight: 700 !important;
 }
 
-.small {
+.small,
+.text-sm {
     font-size: 0.875rem;
 }
 
@@ -460,6 +468,16 @@ a:hover {
 .btn-outline:hover {
     border-color: var(--text-color);
     background-color: var(--surface-color);
+}
+
+.btn-danger {
+    background-color: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+    color: white;
 }
 
 .btn-lg {
