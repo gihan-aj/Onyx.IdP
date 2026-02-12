@@ -477,11 +477,25 @@ a:hover {
     font-size: 0.875rem;
 }
 
+
 /* Navigation Extras */
 .nav-text {
     color: var(--text-color);
     font-weight: 500;
     font-size: 0.875rem;
+}
+
+/* Alignment Utilities */
+.d-flex {
+    display: flex !important;
+}
+
+.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.justify-content-end {
+    justify-content: flex-end !important;
 }
 
 /* Spacing Utilities */
@@ -537,7 +551,7 @@ a:hover {
     width: 240px;
     /* SLightly narrower */
     background-color: var(--surface-color);
-/*    border-right: 1px solid var(--border-color);*/
+    /*    border-right: 1px solid var(--border-color);*/
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -551,7 +565,7 @@ a:hover {
     display: flex;
     align-items: center;
     padding: 0 1rem;
-/*    border-bottom: 1px solid var(--border-color);*/
+    /*    border-bottom: 1px solid var(--border-color);*/
 }
 
 .sidebar-nav {

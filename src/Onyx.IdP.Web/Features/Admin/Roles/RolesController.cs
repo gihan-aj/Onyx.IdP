@@ -90,4 +90,93 @@ public class RolesController : Controller
 
         return View(viewModel);
     }
+
+    [HttpGet("Create")]
+    public IActionResult Create()
+    {
+        return View(new RoleFormViewModel());
+    }
+
+    [HttpPost("Create")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(RoleFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var result = await _roleManager.CreateAsync(new ApplicationRole
+        {
+            Name = model.Name,
+            Description = model.Description
+        });
+
+        if (result.Succeeded)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        return View(model);
+    }
+
+    [HttpGet("Edit/{id}")]
+    public async Task<IActionResult> Edit(string id)
+    {
+        var role = await _roleManager.FindByIdAsync(id);
+        if (role == null)
+        {
+            return NotFound();
+        }
+
+        return View(new RoleFormViewModel
+        {
+            Id = role.Id,
+            Name = role.Name!,
+            Description = role.Description
+        });
+    }
+
+    [HttpPost("Edit/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(string id, RoleFormViewModel model)
+    {
+        if (id != model.Id)
+        {
+            return BadRequest();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var role = await _roleManager.FindByIdAsync(id);
+        if (role == null)
+        {
+            return NotFound();
+        }
+
+        role.Name = model.Name;
+        role.Description = model.Description;
+
+        var result = await _roleManager.UpdateAsync(role);
+
+        if (result.Succeeded)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        return View(model);
+    }
 }

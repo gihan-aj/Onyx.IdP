@@ -12,7 +12,7 @@
             <input type="hidden" name="sortDirection" value="@Model.SortDirection" />
         </form>
         <div class="table-actions">
-            <a href="#" class="btn btn-primary btn-md">
+            <a asp-action="Create" class="btn btn-primary btn-md">
                 + New Role
             </a>
         </div>
@@ -63,7 +63,7 @@
                             <span class="badge badge-primary">@role.UserCount Users</span>
                         </td>
                         <td>
-                            <button class="btn btn-ghost btn-sm">Edit</button>
+                            <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-ghost btn-sm">Edit</a>
                         </td>
                     </tr>
                 }
