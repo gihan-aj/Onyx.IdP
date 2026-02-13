@@ -29,7 +29,7 @@ public static class DependencyInjection
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders()
-        .AddSignInManager<OnyxSignInManager>()
+        .AddSignInManager<ApplicationSignInManager>()
         .AddClaimsPrincipalFactory<ApplicationClaimsPrincipalFactory>();
 
         services.AddOpenIddict()

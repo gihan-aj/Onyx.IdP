@@ -45,7 +45,13 @@
                                     @(user.Email[0].ToString().ToUpper())
                                 </div>
                                 <div>
-                                    <div class="font-weight-bold">@user.FullName</div>
+                                    <div class="font-weight-bold">
+                                        @user.FullName
+                                        @if (user.IsProtected)
+                                        {
+                                            <i data-lucide="shield" class="w-4 h-4 text-muted ms-1 d-inline" style="width:14px; height:14px;"></i>
+                                        }
+                                    </div>
                                     <div class="text-muted small">@user.Email</div>
                                 </div>
                             </div>
@@ -53,7 +59,14 @@
                         <td>
                             @foreach (var role in user.Roles)
                             {
-                                <span class="badge badge-primary me-1">@role</span>
+                                if (role.IsActive) 
+                                {
+                                    <span class="badge badge-primary me-1">@role.Name</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary text-white me-1" data-tooltip="Inactive Role">@role.Name</span>
+                                }
                             }
                         </td>
                         <td>
@@ -80,29 +93,38 @@
                                     <i data-lucide="edit-2"></i>
                                 </a>
                                 
-                                <button type="button" 
-                                        class="btn btn-icon @(user.IsLockedOut ? "text-success" : "text-warning")"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#confirmModal"
-                                        data-action="@Url.Action("ToggleLock", new { id = user.Id })"
-                                        data-message="Are you sure you want to @(user.IsLockedOut ? "unlock" : "lock") <strong>@user.Email</strong>?"
-                                        data-tooltip="@(user.IsLockedOut ? "Unlock" : "Lock")">
-                                    <i data-lucide="@(user.IsLockedOut ? "unlock" : "lock")"></i>
-                                </button>
+                                @if (!user.IsProtected)
+                                {
+                                    <button type="button" 
+                                            class="btn btn-icon @(user.IsLockedOut ? "text-success" : "text-warning")"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#confirmModal"
+                                            data-action="@Url.Action("ToggleLock", new { id = user.Id })"
+                                            data-message="Are you sure you want to @(user.IsLockedOut ? "unlock" : "lock") <strong>@user.Email</strong>?"
+                                            data-tooltip="@(user.IsLockedOut ? "Unlock" : "Lock")">
+                                        <i data-lucide="@(user.IsLockedOut ? "unlock" : "lock")"></i>
+                                    </button>
 
-                                <button type="button" 
-                                        class="btn btn-icon @(user.IsActive ? "text-danger" : "text-success")"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#confirmModal"
-                                        data-action="@Url.Action("ToggleActive", new { id = user.Id })"
-                                        data-message="Are you sure you want to @(user.IsActive ? "deactivate" : "activate") <strong>@user.Email</strong>?"
-                                        data-tooltip="@(user.IsActive ? "Deactivate" : "Activate")">
-                                    <i data-lucide="@(user.IsActive ? "power-off" : "power")"></i>
-                                </button>
+                                    <button type="button" 
+                                            class="btn btn-icon @(user.IsActive ? "text-danger" : "text-success")"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#confirmModal"
+                                            data-action="@Url.Action("ToggleActive", new { id = user.Id })"
+                                            data-message="Are you sure you want to @(user.IsActive ? "deactivate" : "activate") <strong>@user.Email</strong>?"
+                                            data-tooltip="@(user.IsActive ? "Deactivate" : "Activate")">
+                                        <i data-lucide="@(user.IsActive ? "power-off" : "power")"></i>
+                                    </button>
 
-                                <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-icon text-danger" data-tooltip="Delete">
-                                    <i data-lucide="trash-2"></i>
-                                </a>
+                                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-icon text-danger" data-tooltip="Delete">
+                                        <i data-lucide="trash-2"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-icon disabled" disabled data-tooltip="Protected">
+                                        <i data-lucide="lock" class="text-muted opacity-50"></i>
+                                    </button>
+                                }
                             </div>
                         </td>
                     </tr>

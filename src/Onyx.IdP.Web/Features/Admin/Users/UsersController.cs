@@ -6,7 +6,7 @@ using Onyx.IdP.Core.Entities;
 
 namespace Onyx.IdP.Web.Features.Admin.Users;
 
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = "SuperAdmin,Admin")]
 [Route("Admin/[controller]")]
 public class UsersController : Controller
 {
@@ -24,6 +24,8 @@ public class UsersController : Controller
     public async Task<IActionResult> Index(string? searchTerm, string? sortColumn = "Email", string? sortDirection = "asc", int page = 1, int pageSize = 10)
     {
         var query = _userManager.Users.AsQueryable();
+
+        var allRoles = await _roleManager.Roles.ToListAsync();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -50,7 +52,12 @@ public class UsersController : Controller
         var userDtos = new List<UserDto>();
         foreach (var user in users)
         {
-            var roles = await _userManager.GetRolesAsync(user);
+            var roleNames = await _userManager.GetRolesAsync(user);
+            var roles = allRoles
+                .Where(r => roleNames.Contains(r.Name!))
+                .Select(r => new UserRoleDto { Name = r.Name!, IsActive = r.IsActive })
+                .ToList();
+
             userDtos.Add(new UserDto
             {
                 Id = user.Id,
@@ -141,14 +148,29 @@ public class UsersController : Controller
         if (result.Succeeded)
         {
             // Update Roles
-            var userRoles = await _userManager.GetRolesAsync(user);
+            var currentRoles = await _userManager.GetRolesAsync(user);
             var selectedRoles = model.AvailableRoles.Where(r => r.Selected).Select(r => r.RoleName!).ToList();
 
-            var rolesToAdd = selectedRoles.Except(userRoles);
-            var rolesToRemove = userRoles.Except(selectedRoles);
+            var rolesToAdd = selectedRoles.Except(currentRoles).ToList();
+            var rolesToRemove = currentRoles.Except(selectedRoles).ToList();
 
-            await _userManager.AddToRolesAsync(user, rolesToAdd);
-            await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+            // Safety check: specific protection for admin@onyx.com
+            if (user.Email == "admin@onyx.com" && rolesToRemove.Contains("SuperAdmin"))
+            {
+                rolesToRemove.Remove("SuperAdmin"); // Silently keep SuperAdmin
+                // Or we could re-add it to SelectedRoles to be consistent, but preventing removal is enough.
+            }
+
+            // General safety: Prevent removing your own Admin/SuperAdmin role if you are editing yourself
+            // (Optional, but good practice. The user explicitly asked about "your own roles")
+            if (User.Identity?.Name == user.UserName)
+            {
+                 if (rolesToRemove.Contains("SuperAdmin")) rolesToRemove.Remove("SuperAdmin");
+                 if (rolesToRemove.Contains("Admin")) rolesToRemove.Remove("Admin");
+            }
+
+            if (rolesToAdd.Any()) await _userManager.AddToRolesAsync(user, rolesToAdd);
+            if (rolesToRemove.Any()) await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
 
             return RedirectToAction(nameof(Index));
         }

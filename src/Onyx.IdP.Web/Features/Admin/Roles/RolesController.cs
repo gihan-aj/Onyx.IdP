@@ -6,7 +6,7 @@ using Onyx.IdP.Core.Entities;
 
 namespace Onyx.IdP.Web.Features.Admin.Roles;
 
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = "SuperAdmin,Admin")]
 [Route("Admin/[controller]")]
 public class RolesController : Controller
 {

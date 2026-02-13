@@ -24,7 +24,14 @@ public class UserDto
     public bool EmailConfirmed { get; set; }
     public bool IsLockedOut { get; set; }
     public bool IsActive { get; set; }
-    public IList<string> Roles { get; set; } = new List<string>();
+    public IList<UserRoleDto> Roles { get; set; } = new List<UserRoleDto>();
 
     public string FullName => $"{FirstName} {LastName}".Trim();
+    public bool IsProtected => Email == "admin@onyx.com";
+}
+
+public class UserRoleDto
+{
+    public string Name { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
 }

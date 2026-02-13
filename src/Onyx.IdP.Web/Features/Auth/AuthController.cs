@@ -289,5 +289,11 @@ public class AuthController : Controller
     {
         return View();
     }
+
+    [HttpGet]
+    public IActionResult Lockout()
+    {
+        return View();
+    }
 }
 

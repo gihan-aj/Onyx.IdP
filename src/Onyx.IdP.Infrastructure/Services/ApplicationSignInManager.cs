@@ -7,9 +7,9 @@ using Onyx.IdP.Core.Entities;
 
 namespace Onyx.IdP.Infrastructure.Services;
 
-public class OnyxSignInManager : SignInManager<ApplicationUser>
+public class ApplicationSignInManager : SignInManager<ApplicationUser>
 {
-    public OnyxSignInManager(
+    public ApplicationSignInManager(
         UserManager<ApplicationUser> userManager,
         IHttpContextAccessor contextAccessor,
         IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory,

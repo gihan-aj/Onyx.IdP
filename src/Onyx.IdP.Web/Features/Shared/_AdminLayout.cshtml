@@ -25,10 +25,10 @@
                     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
                 }
                 <a class="sidebar-link @(currentController == "Users" ? "active" : "")" asp-controller="Users" asp-action="Index">
-                    <span class="icon">👥</span> Users
+                    <i data-lucide="users" class="icon"></i> Users
                 </a>
                 <a class="sidebar-link @(currentController == "Roles" ? "active" : "")" asp-controller="Roles" asp-action="Index">
-                    <span class="icon">🛡️</span> Roles
+                    <i data-lucide="shield" class="icon"></i> Roles
                 </a>
             </nav>
         </aside>
