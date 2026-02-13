@@ -9,6 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Onyx Identity</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -26,7 +27,7 @@
                 {
                     @if (User.IsInRole("Admin"))
                     {
-                        <a class="nav-link d-inline me-3" asp-controller="Roles" asp-action="Index">Admin</a>
+                        <a class="nav-link d-inline me-3" asp-controller="Users" asp-action="Index">Admin</a>
                     }
                     <a class="nav-link d-inline me-3" asp-controller="Profile" asp-action="Index">Hello, @User.Identity?.Name!</a>
                     <form asp-controller="Auth" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="d-inline">
@@ -54,7 +55,7 @@
         </div>
     </footer>
 
-    @* <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false) *@
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

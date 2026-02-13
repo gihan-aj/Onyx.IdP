@@ -193,6 +193,10 @@ a:hover {
     max-width: 800px;
 }
 
+.auth-card.fluid {
+    max-width: none;
+}
+
 .auth-header {
     text-align: center;
     margin-bottom: 1.5rem;
@@ -242,6 +246,47 @@ a:hover {
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 1rem;
+}
+
+.form-check-input {
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.15rem;
+    /* Optical alignment */
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+/* Avatar Placeholder */
+.avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    font-weight: 600;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Role List in User Edit */
+.role-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: var(--background-color);
+}
+
+.role-item {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s;
+    margin-bottom: 0.25rem !important;
+}
+
+.role-item:hover {
+    background-color: var(--surface-color);
 }
 
 .form-header {
@@ -410,7 +455,7 @@ a:hover {
 .text-danger {
     color: #ef4444 !important;
     /* Tailwind red-500 equivalent */
-/*    font-size: 0.875rem;*/
+    /*    font-size: 0.875rem;*/
 }
 
 .text-center {
@@ -517,9 +562,70 @@ a:hover {
 }
 
 /* Spacing Utilities */
+.p-3 {
+    padding: 1rem !important;
+}
+
 .py-4 {
     padding-top: 1.5rem !important;
     padding-bottom: 1.5rem !important;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+
+.me-1 {
+    margin-right: 0.25rem !important;
+}
+
+.gap-4 {
+    gap: 1.5rem !important;
+}
+
+/* Alignment Utilities */
+.align-items-center {
+    align-items: center !important;
+}
+
+/* Color Utilities */
+.bg-light {
+    background-color: var(--background-color) !important;
+    border: 1px solid var(--border-color);
+    /* Added border to make it visible */
+}
+
+.bg-success {
+    background-color: #10b981 !important;
+}
+
+.bg-warning {
+    background-color: #f59e0b !important;
+}
+
+.bg-danger {
+    background-color: #ef4444 !important;
+}
+
+.text-white {
+    color: white !important;
+}
+
+.text-dark {
+    color: #1e293b !important;
+}
+
+/* Border Utilities */
+.border {
+    border: 1px solid var(--border-color) !important;
+}
+
+.rounded {
+    border-radius: 0.375rem !important;
+}
+
+.rounded-circle {
+    border-radius: 50% !important;
 }
 
 /* Error Pages */
