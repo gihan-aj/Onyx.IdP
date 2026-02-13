@@ -23,5 +23,9 @@ public class RoleDto
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public bool IsActive { get; set; }
+    
+    public bool IsProtected => Name == "SuperAdmin" || Name == "User";
+    public bool IsSuperAdmin => Name == "SuperAdmin";
     public int UserCount { get; set; }
 }

@@ -6,7 +6,7 @@ using Onyx.IdP.Core.Entities;
 
 namespace Onyx.IdP.Web.Features.Admin.Roles;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "SuperAdmin")]
 [Route("Admin/[controller]")]
 public class RolesController : Controller
 {
@@ -53,26 +53,16 @@ public class RolesController : Controller
             {
                 Id = r.Id,
                 Name = r.Name!,
-                Description = r.Description
+                Description = r.Description,
+                IsActive = r.IsActive
             })
             .ToListAsync();
 
-        // Get User Counts (optimization: do this separately or via group join if performance is critical, but for admin panel Loop is okay for now or separate query)
-        // For simplicity, we'll fetch user counts. Note: This can be N+1 problem. 
-        // Better approach: 
-        // var rolesWithCounts = await _roleManager.Roles... (Roles doesn't assume navigation property to users usually in Identity unless configured)
-        // Let's stick to simple query for now.
-        
         foreach (var role in roles)
         {
            var identityRole = await _roleManager.FindByIdAsync(role.Id);
            if (identityRole != null)
            {
-               // This allows checking users in role. 
-               // However, `GetUsersInRoleAsync` returns a list, which is heavy. 
-               // For now, let's skip UserCount or do it efficiently if possible. 
-               // Identity doesn't expose `Users` navigation on Role by default in all templates.
-               // Let's leave UserCount as 0 for this step to avoid performance hit or complex query, or implemented later.
                role.UserCount = (await _userManager.GetUsersInRoleAsync(role.Name!)).Count;
            }
         }
@@ -109,7 +99,8 @@ public class RolesController : Controller
         var result = await _roleManager.CreateAsync(new ApplicationRole
         {
             Name = model.Name,
-            Description = model.Description
+            Description = model.Description,
+            IsActive = true
         });
 
         if (result.Succeeded)
@@ -129,10 +120,7 @@ public class RolesController : Controller
     public async Task<IActionResult> Edit(string id)
     {
         var role = await _roleManager.FindByIdAsync(id);
-        if (role == null)
-        {
-            return NotFound();
-        }
+        if (role == null) return NotFound();
 
         return View(new RoleFormViewModel
         {
@@ -146,20 +134,24 @@ public class RolesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(string id, RoleFormViewModel model)
     {
-        if (id != model.Id)
-        {
-            return BadRequest();
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
+        if (id != model.Id) return BadRequest();
+        if (!ModelState.IsValid) return View(model);
 
         var role = await _roleManager.FindByIdAsync(id);
-        if (role == null)
+        if (role == null) return NotFound();
+
+        // Protect SuperAdmin name change
+        if (role.Name == "SuperAdmin" && model.Name != "SuperAdmin")
         {
-            return NotFound();
+             ModelState.AddModelError(string.Empty, "Cannot change the name of the SuperAdmin role.");
+             return View(model);
+        }
+        
+        // Protect User name change
+        if (role.Name == "User" && model.Name != "User")
+        {
+             ModelState.AddModelError(string.Empty, "Cannot change the name of the User role.");
+             return View(model);
         }
 
         role.Name = model.Name;
@@ -180,13 +172,36 @@ public class RolesController : Controller
         return View(model);
     }
 
+    [HttpPost("ToggleActive/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleActive(string id)
+    {
+        var role = await _roleManager.FindByIdAsync(id);
+        if (role == null) return NotFound();
+
+        // Prevent deactivating protected roles
+        if (role.Name == "SuperAdmin" || role.Name == "User")
+        {
+            TempData["Error"] = $"Cannot deactivate {role.Name} role.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        role.IsActive = !role.IsActive;
+        await _roleManager.UpdateAsync(role);
+
+        return RedirectToAction(nameof(Index));
+    }
+
     [HttpGet("Delete/{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var role = await _roleManager.FindByIdAsync(id);
-        if (role == null)
+        if (role == null) return NotFound();
+
+        if (role.Name == "SuperAdmin" || role.Name == "User")
         {
-            return NotFound();
+            TempData["Error"] = $"Cannot delete {role.Name} role.";
+            return RedirectToAction(nameof(Index));
         }
 
         var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
@@ -204,9 +219,12 @@ public class RolesController : Controller
     public async Task<IActionResult> Delete(string id, DeleteRoleViewModel model)
     {
         var role = await _roleManager.FindByIdAsync(id);
-        if (role == null)
+        if (role == null) return NotFound();
+
+        if (role.Name == "SuperAdmin" || role.Name == "User")
         {
-            return NotFound();
+             TempData["Error"] = $"Cannot delete {role.Name} role.";
+             return RedirectToAction(nameof(Index));
         }
 
         if (model.UnassignUsers)
@@ -226,10 +244,9 @@ public class RolesController : Controller
 
         foreach (var error in result.Errors)
         {
-            ModelState.AddModelError(string.Empty, error.Description);
+             ModelState.AddModelError(string.Empty, error.Description);
         }
 
-        // Re-fetch user count for view
         var currentUsers = await _userManager.GetUsersInRoleAsync(role.Name!);
         model.UserCount = currentUsers.Count;
         model.Name = role.Name!;

@@ -26,13 +26,13 @@ public class DataSeeder
         await context.Database.EnsureCreatedAsync();
 
         // Seed Roles
-        if (!await roleManager.RoleExistsAsync("Admin"))
+        if (!await roleManager.RoleExistsAsync("SuperAdmin"))
         {
-            await roleManager.CreateAsync(new ApplicationRole { Name = "Admin", Description = "Administrator role" });
+            await roleManager.CreateAsync(new ApplicationRole { Name = "SuperAdmin", Description = "System Administrator", IsActive = true });
         }
         if (!await roleManager.RoleExistsAsync("User"))
         {
-            await roleManager.CreateAsync(new ApplicationRole { Name = "User", Description = "Standard user role" });
+            await roleManager.CreateAsync(new ApplicationRole { Name = "User", Description = "Standard user role", IsActive = true });
         }
 
         // Seed Admin User
@@ -44,11 +44,11 @@ public class DataSeeder
                 UserName = adminEmail,
                 Email = adminEmail,
                 EmailConfirmed = true,
-                FirstName = "Admin",
-                LastName = "User"
+                FirstName = "Super",
+                LastName = "Admin"
             };
             await userManager.CreateAsync(user, "Admin123!");
-            await userManager.AddToRoleAsync(user, "Admin");
+            await userManager.AddToRoleAsync(user, "SuperAdmin");
         }
 
         // Seed Postman Client

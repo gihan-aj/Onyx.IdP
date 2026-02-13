@@ -46,6 +46,7 @@
                     </a>
                 </th>
                 <th>Users</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -57,15 +58,53 @@
                     <tr>
                         <td>
                             <span class="font-weight-bold">@role.Name</span>
+                            @if (role.IsProtected)
+                            {
+                                <i data-lucide="shield" class="w-4 h-4 text-muted ms-1 d-inline" style="width:14px; height:14px;"></i>
+                            }
                         </td>
                         <td>@role.Description</td>
                         <td>
                             <span class="badge badge-primary">@role.UserCount Users</span>
                         </td>
                         <td>
+                            @if (role.IsActive)
+                            {
+                                <span class="badge bg-success text-white">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary text-white">Inactive</span>
+                            }
+                        </td>
+                        <td>
                             <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-ghost btn-sm">Edit</a>
-                                <a asp-action="Delete" asp-route-id="@role.Id" class="btn btn-ghost btn-sm text-danger">Delete</a>
+                                <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-icon" data-tooltip="Edit">
+                                    <i data-lucide="edit-2"></i>
+                                </a>
+
+                                @if (!role.IsProtected)
+                                {
+                                    <button type="button" 
+                                            class="btn btn-icon @(role.IsActive ? "text-danger" : "text-success")"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#confirmModal"
+                                            data-action="@Url.Action("ToggleActive", new { id = role.Id })"
+                                            data-message="Are you sure you want to @(role.IsActive ? "deactivate" : "activate") <strong>@role.Name</strong>?"
+                                            data-tooltip="@(role.IsActive ? "Deactivate" : "Activate")">
+                                        <i data-lucide="@(role.IsActive ? "power-off" : "power")"></i>
+                                    </button>
+
+                                    <a asp-action="Delete" asp-route-id="@role.Id" class="btn btn-icon text-danger" data-tooltip="Delete">
+                                        <i data-lucide="trash-2"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-icon disabled" disabled data-tooltip="Protected">
+                                        <i data-lucide="lock" class="text-muted opacity-50"></i>
+                                    </button>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -74,7 +113,7 @@
             else
             {
                 <tr>
-                    <td colspan="4" class="text-center py-4">
+                    <td colspan="5" class="text-center py-4">
                         <span class="text-muted">No roles found.</span>
                     </td>
                 </tr>
@@ -118,3 +157,42 @@
         }
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                <form id="confirmForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var confirmModal = document.getElementById('confirmModal');
+        confirmModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var action = button.getAttribute('data-action');
+            var message = button.getAttribute('data-message');
+
+            var form = confirmModal.querySelector('#confirmForm');
+            var messageEl = confirmModal.querySelector('#confirmMessage');
+
+            form.action = action;
+            messageEl.innerHTML = message;
+        });
+    </script>
+}

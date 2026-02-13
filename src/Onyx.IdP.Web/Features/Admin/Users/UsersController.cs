@@ -6,7 +6,7 @@ using Onyx.IdP.Core.Entities;
 
 namespace Onyx.IdP.Web.Features.Admin.Users;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "SuperAdmin")]
 [Route("Admin/[controller]")]
 public class UsersController : Controller
 {

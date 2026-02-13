@@ -25,7 +25,7 @@
             <div class="nav-actions">
                 @if (SignInManager.IsSignedIn(User))
                 {
-                    @if (User.IsInRole("Admin"))
+                    @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                     {
                         <a class="nav-link d-inline me-3" asp-controller="Users" asp-action="Index">Admin</a>
                     }
