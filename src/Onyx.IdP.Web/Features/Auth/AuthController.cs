@@ -132,7 +132,7 @@ public class AuthController : Controller
             if (result.IsNotAllowed)
             {
                 _logger.LogWarning("User account is not allowed to login (likely unconfirmed email).");
-                ModelState.AddModelError(string.Empty, "Please confirm your email address.");
+                ModelState.AddModelError(string.Empty, "Your account is not active. Confirm the email or contact the administrator.");
                 return View(model);
             }
             else

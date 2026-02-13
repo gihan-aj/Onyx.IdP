@@ -23,6 +23,7 @@ public class UserDto
     public string? LastName { get; set; }
     public bool EmailConfirmed { get; set; }
     public bool IsLockedOut { get; set; }
+    public bool IsActive { get; set; }
     public IList<string> Roles { get; set; } = new List<string>();
 
     public string FullName => $"{FirstName} {LastName}".Trim();

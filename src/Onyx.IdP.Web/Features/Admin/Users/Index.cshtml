@@ -57,7 +57,11 @@
                             }
                         </td>
                         <td>
-                            @if (user.IsLockedOut)
+                            @if (!user.IsActive)
+                            {
+                                <span class="badge bg-secondary text-white">Deactivated</span>
+                            }
+                            else if (user.IsLockedOut)
                             {
                                 <span class="badge bg-danger text-white">Locked</span>
                             }
@@ -72,8 +76,33 @@
                         </td>
                         <td>
                             <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-ghost btn-sm">Edit</a>
-                                <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-ghost btn-sm text-danger">Delete</a>
+                                <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-icon" data-tooltip="Edit">
+                                    <i data-lucide="edit-2"></i>
+                                </a>
+                                
+                                <button type="button" 
+                                        class="btn btn-icon @(user.IsLockedOut ? "text-success" : "text-warning")"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#confirmModal"
+                                        data-action="@Url.Action("ToggleLock", new { id = user.Id })"
+                                        data-message="Are you sure you want to @(user.IsLockedOut ? "unlock" : "lock") <strong>@user.Email</strong>?"
+                                        data-tooltip="@(user.IsLockedOut ? "Unlock" : "Lock")">
+                                    <i data-lucide="@(user.IsLockedOut ? "unlock" : "lock")"></i>
+                                </button>
+
+                                <button type="button" 
+                                        class="btn btn-icon @(user.IsActive ? "text-danger" : "text-success")"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#confirmModal"
+                                        data-action="@Url.Action("ToggleActive", new { id = user.Id })"
+                                        data-message="Are you sure you want to @(user.IsActive ? "deactivate" : "activate") <strong>@user.Email</strong>?"
+                                        data-tooltip="@(user.IsActive ? "Deactivate" : "Activate")">
+                                    <i data-lucide="@(user.IsActive ? "power-off" : "power")"></i>
+                                </button>
+
+                                <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-icon text-danger" data-tooltip="Delete">
+                                    <i data-lucide="trash-2"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -126,3 +155,42 @@
         }
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                <form id="confirmForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var confirmModal = document.getElementById('confirmModal');
+        confirmModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var action = button.getAttribute('data-action');
+            var message = button.getAttribute('data-message');
+
+            var form = confirmModal.querySelector('#confirmForm');
+            var messageEl = confirmModal.querySelector('#confirmMessage');
+
+            form.action = action;
+            messageEl.innerHTML = message;
+        });
+    </script>
+}

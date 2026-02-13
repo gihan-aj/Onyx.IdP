@@ -28,7 +28,8 @@ public static class DependencyInjection
             options.SignIn.RequireConfirmedEmail = true;
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
-        .AddDefaultTokenProviders();
+        .AddDefaultTokenProviders()
+        .AddSignInManager<OnyxSignInManager>();
 
         services.AddOpenIddict()
             .AddCore(options =>

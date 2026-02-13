@@ -57,6 +57,7 @@ public class UsersController : Controller
                 Email = user.Email!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                IsActive = user.IsActive,
                 EmailConfirmed = user.EmailConfirmed,
                 IsLockedOut = await _userManager.IsLockedOutAsync(user),
                 Roles = roles
@@ -205,5 +206,59 @@ public class UsersController : Controller
         }
 
         return View(model);
+    }
+
+    [HttpPost("ToggleActive/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleActive(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null) return NotFound();
+
+        // Prevent deactivating self
+        if (User.Identity?.Name == user.UserName)
+        {
+            TempData["Error"] = "You cannot deactivate your own account.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        user.IsActive = !user.IsActive;
+        await _userManager.UpdateAsync(user);
+
+        if (!user.IsActive)
+        {
+            // Force logout by updating security stamp
+            await _userManager.UpdateSecurityStampAsync(user);
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("ToggleLock/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleLock(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null) return NotFound();
+
+        // Prevent locking self
+        if (User.Identity?.Name == user.UserName)
+        {
+            TempData["Error"] = "You cannot lock your own account.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow)
+        {
+            // Unlock
+            await _userManager.SetLockoutEndDateAsync(user, null);
+        }
+        else
+        {
+            // Lock
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 }
