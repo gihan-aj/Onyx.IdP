@@ -103,6 +103,28 @@ public class DataSeeder
             });
         }
 
+        if (await scopeManager.FindByNameAsync("ims_resource_server") is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = "ims_resource_server",
+                DisplayName = "IMS API",
+                Description = "Access the Inventory management system.",
+                Resources = { "ims_backend_api" }
+            });
+        }
+
+        if (await scopeManager.FindByNameAsync("invoice_api") is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = "invoice_api",
+                DisplayName = "Invoice API",
+                Description = "Access the Invoice management system.",
+                Resources = { "invoice_backend_api" }
+            });
+        }
+
         // Seed Postman Client
         if (await manager.FindByClientIdAsync("postman") is null)
         {
@@ -129,7 +151,9 @@ public class DataSeeder
                     OpenIddictConstants.Permissions.Scopes.Profile,
                     OpenIddictConstants.Permissions.Scopes.Roles,
                     OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.OfflineAccess,
-                    OpenIddictConstants.Permissions.Prefixes.Scope + "api"
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "api",
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "ims_resource_server",
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "invoice_api"
                 }
             });
         }

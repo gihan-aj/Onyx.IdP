@@ -91,6 +91,10 @@ builder.Services.AddOpenIddict()
         // {
         //     options.UseAspNetCore().DisableTransportSecurityRequirement();
         // }
+        // 6. Dynamic Scopes
+        // We disable scope validation so that we can add new scopes to the database
+        // without needing to register them in code (Program.cs).
+        //options.DisableScopeValidation();
     })
     // C. Validation: Needed if this app also consumes tokens (e.g. UserInfo endpoint)
     .AddValidation(options =>
