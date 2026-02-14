@@ -1,0 +1,205 @@
+@model Onyx.IdP.Web.Features.Admin.Scopes.ScopesViewModel
+@{
+    ViewData["Title"] = "Scopes";
+    Layout = "_AdminLayout";
+}
+
+<div class="data-table-container">
+    <div class="table-controls">
+        <form asp-action="Index" method="get" class="search-box">
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Search scopes..." />
+            <input type="hidden" name="sortColumn" value="@Model.SortColumn" />
+            <input type="hidden" name="sortDirection" value="@Model.SortDirection" />
+        </form>
+        <div class="table-actions">
+            <a asp-action="Create" class="btn btn-primary btn-md">
+                + New Scope
+            </a>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>
+                    <a asp-action="Index" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-sortColumn="Name" 
+                       asp-route-sortDirection="@(Model.SortColumn == "Name" && Model.SortDirection == "asc" ? "desc" : "asc")">
+                        Name
+                        @if (Model.SortColumn == "Name")
+                        {
+                            <span>@(Model.SortDirection == "asc" ? "↑" : "↓")</span>
+                        }
+                    </a>
+                </th>
+                <th>
+                    <a asp-action="Index" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-sortColumn="DisplayName" 
+                       asp-route-sortDirection="@(Model.SortColumn == "DisplayName" && Model.SortDirection == "asc" ? "desc" : "asc")">
+                        Display Name
+                        @if (Model.SortColumn == "DisplayName")
+                        {
+                            <span>@(Model.SortDirection == "asc" ? "↑" : "↓")</span>
+                        }
+                    </a>
+                </th>
+                <th>Resources (Audience)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Scopes.Any())
+            {
+                foreach (var scope in Model.Scopes)
+                {
+                    <tr>
+                        <td>
+                            <span class="font-weight-bold">@scope.Name</span>
+                        </td>
+                        <td>@scope.DisplayName</td>
+                        <td>
+                           @if (!string.IsNullOrEmpty(scope.Resources))
+                           {
+                               @foreach(var resource in scope.Resources.Split(' '))
+                               {
+                                   <span class="badge bg-secondary text-white me-1">@resource</span>
+                               }
+                           }
+                           else 
+                           {
+                               <span class="text-muted small">-</span>
+                           }
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button type="button" 
+                                        class="btn btn-icon text-danger"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteScopeModal"
+                                        data-action="@Url.Action("Delete", new { id = scope.Id })"
+                                        data-name="@scope.Name"
+                                        data-resources="@scope.Resources"
+                                        data-tooltip="Delete">
+                                    <i data-lucide="trash-2"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center py-4">
+                        <span class="text-muted">No scopes found.</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="table-pagination">
+        @if (Model.HasPreviousPage)
+        {
+            <a asp-action="Index" 
+               asp-route-page="@(Model.Page - 1)" 
+               asp-route-searchTerm="@Model.SearchTerm" 
+               asp-route-sortColumn="@Model.SortColumn" 
+               asp-route-sortDirection="@Model.SortDirection" 
+               class="page-link">
+                Previous
+            </a>
+        }
+        else
+        {
+            <span class="page-link disabled">Previous</span>
+        }
+
+        <span class="text-muted small">Page @Model.Page of @Model.TotalPages</span>
+
+        @if (Model.HasNextPage)
+        {
+            <a asp-action="Index" 
+               asp-route-page="@(Model.Page + 1)" 
+               asp-route-searchTerm="@Model.SearchTerm" 
+               asp-route-sortColumn="@Model.SortColumn" 
+               asp-route-sortDirection="@Model.SortDirection" 
+               class="page-link">
+                Next
+            </a>
+        }
+        else
+        {
+            <span class="page-link disabled">Next</span>
+        }
+    </div>
+</div>
+
+<!-- Delete Scope Modal -->
+<div class="modal fade" id="deleteScopeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4 text-danger">
+                    <i data-lucide="alert-triangle" style="width: 48px; height: 48px;"></i>
+                </div>
+                
+                <h2 class="card-title mb-3">Delete Scope?</h2>
+                
+                <p class="card-text text-muted mb-4">
+                    Are you sure you want to delete the scope <strong id="deleteScopeName"></strong>?
+                    <br/>
+                    This action cannot be undone. Clients relying on this scope may fail.
+                </p>
+
+                <div id="deleteScopeResourcesAlert" class="alert alert-warning text-start d-none">
+                    <small>
+                        <strong>Warning:</strong> This scope is linked to the following resources:
+                        <br/>
+                        <span id="deleteScopeResources"></span>
+                    </small>
+                </div>
+
+                <form id="deleteScopeForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">Yes, Delete Scope</button>
+                        <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var deleteModal = document.getElementById('deleteScopeModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var action = button.getAttribute('data-action');
+            var name = button.getAttribute('data-name');
+            var resources = button.getAttribute('data-resources');
+
+            var form = deleteModal.querySelector('#deleteScopeForm');
+            var nameEl = deleteModal.querySelector('#deleteScopeName');
+            var resourcesAlert = deleteModal.querySelector('#deleteScopeResourcesAlert');
+            var resourcesEl = deleteModal.querySelector('#deleteScopeResources');
+
+            form.action = action;
+            nameEl.textContent = name;
+
+            if (resources && resources.trim() !== "") {
+                resourcesEl.textContent = resources;
+                resourcesAlert.classList.remove('d-none');
+            } else {
+                resourcesAlert.classList.add('d-none');
+            }
+            
+            // Re-initialize icons if keeping modal open or dynamic
+            // But Bootstrap modal just shows/hides, so icons should be fine if already rendered.
+        });
+    </script>
+}

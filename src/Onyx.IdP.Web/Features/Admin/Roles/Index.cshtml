@@ -78,48 +78,55 @@
                             }
                         </td>
                         <td>
-                            <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-icon" data-tooltip="Edit">
-                                    <i data-lucide="edit-2"></i>
-                                </a>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-icon" data-tooltip="Edit">
+                            <i data-lucide="edit-2"></i>
+                        </a>
+                        @if (!role.IsProtected)
+                        {
+                            <button type="button" 
+                                    class="btn btn-icon @(role.IsActive ? "text-danger" : "text-success")"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#toggleRoleModal"
+                                    data-action="@Url.Action("ToggleActive", new { id = role.Id })"
+                                    data-name="@role.Name"
+                                    data-active="@role.IsActive.ToString().ToLower()"
+                                    data-tooltip="@(role.IsActive ? "Deactivate" : "Activate")">
+                                <i data-lucide="@(role.IsActive ? "power-off" : "power")"></i>
+                            </button>
 
-                                @if (!role.IsProtected)
-                                {
-                                    <button type="button" 
-                                            class="btn btn-icon @(role.IsActive ? "text-danger" : "text-success")"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#confirmModal"
-                                            data-action="@Url.Action("ToggleActive", new { id = role.Id })"
-                                            data-message="Are you sure you want to @(role.IsActive ? "deactivate" : "activate") <strong>@role.Name</strong>?"
-                                            data-tooltip="@(role.IsActive ? "Deactivate" : "Activate")">
-                                        <i data-lucide="@(role.IsActive ? "power-off" : "power")"></i>
-                                    </button>
-
-                                    <a asp-action="Delete" asp-route-id="@role.Id" class="btn btn-icon text-danger" data-tooltip="Delete">
-                                        <i data-lucide="trash-2"></i>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-icon disabled" disabled data-tooltip="Protected">
-                                        <i data-lucide="lock" class="text-muted opacity-50"></i>
-                                    </button>
-                                }
-                            </div>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="5" class="text-center py-4">
-                        <span class="text-muted">No roles found.</span>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                            <button type="button" 
+                                    class="btn btn-icon text-danger"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteRoleModal"
+                                    data-action="@Url.Action("Delete", new { id = role.Id })"
+                                    data-name="@role.Name"
+                                    data-user-count="@role.UserCount"
+                                    data-tooltip="Delete">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-icon disabled" disabled data-tooltip="Protected">
+                                <i data-lucide="lock" class="text-muted opacity-50"></i>
+                            </button>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr>
+            <td colspan="5" class="text-center py-4">
+                <span class="text-muted">No roles found.</span>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
 
     <div class="table-pagination">
         @if (Model.HasPreviousPage)
@@ -158,22 +165,63 @@
     </div>
 </div>
 
-<!-- Confirmation Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+<!-- Toggle Role Status Modal -->
+<div class="modal fade" id="toggleRoleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Action</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmMessage">Are you sure?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                <form id="confirmForm" method="post">
+            <div class="modal-body text-center p-5">
+                <div id="toggleIconWrapper" class="mb-4">
+                    <i id="toggleIcon" data-lucide="power" style="width: 48px; height: 48px;"></i>
+                </div>
+                
+                <h2 id="toggleTitle" class="card-title mb-3"></h2>
+                
+                <p class="card-text text-muted mb-4">
+                    Are you sure you want to <strong id="toggleActionText"></strong> the role <strong id="toggleRoleName"></strong>?
+                </p>
+
+                <form id="toggleRoleForm" method="post">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-primary">Confirm</button>
+                    <div class="d-grid gap-2">
+                        <button id="toggleConfirmBtn" type="submit" class="btn">Confirm</button>
+                        <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Role Modal -->
+<div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4 text-danger">
+                    <i data-lucide="alert-triangle" style="width: 48px; height: 48px;"></i>
+                </div>
+                
+                <h2 class="card-title mb-3">Delete Role?</h2>
+                
+                <p class="card-text text-muted mb-4">
+                    Are you sure you want to delete the role <strong id="deleteRoleName"></strong>?
+                    <br/>
+                    This action cannot be undone.
+                </p>
+
+                <div id="deleteUserCountAlert" class="alert alert-warning text-start d-none">
+                    <small>
+                        <strong>Warning:</strong> This role is currently assigned to <strong id="deleteUserCount"></strong> users.
+                        Deleting it will remove the role from these users.
+                    </small>
+                </div>
+
+                <form id="deleteRoleForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">Yes, Delete Role</button>
+                        <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -182,17 +230,68 @@
 
 @section Scripts {
     <script>
-        var confirmModal = document.getElementById('confirmModal');
-        confirmModal.addEventListener('show.bs.modal', function (event) {
+        // Toggle Modal Logic
+        var toggleModal = document.getElementById('toggleRoleModal');
+        toggleModal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget;
             var action = button.getAttribute('data-action');
-            var message = button.getAttribute('data-message');
+            var name = button.getAttribute('data-name');
+            var isActive = button.getAttribute('data-active') === 'true';
 
-            var form = confirmModal.querySelector('#confirmForm');
-            var messageEl = confirmModal.querySelector('#confirmMessage');
+            var form = toggleModal.querySelector('#toggleRoleForm');
+            var titleEl = toggleModal.querySelector('#toggleTitle');
+            var actionTextEl = toggleModal.querySelector('#toggleActionText');
+            var nameEl = toggleModal.querySelector('#toggleRoleName');
+            var confirmBtn = toggleModal.querySelector('#toggleConfirmBtn');
+            var iconWrapper = toggleModal.querySelector('#toggleIconWrapper');
+            // Note: We can't easily change the Lucide icon class dynamically after load without re-rendering or using the library's API.
+            // But bootstrap modal just shows hidden content.
+            // Simplest way: Toggle classes on the wrapper and change text. 
+            // For the icon, since lucide replaces <i> tags with <svg>, we might need to manipulate the svg or just hide/show two icons.
+            // OR: Just keep one icon (power) and change color.
+            
+            form.action = action;
+            nameEl.textContent = name;
+
+            if (isActive) {
+                // Deactivate
+                titleEl.textContent = "Deactivate Role?";
+                actionTextEl.textContent = "deactivate";
+                confirmBtn.className = "btn btn-danger";
+                confirmBtn.textContent = "Yes, Deactivate";
+                iconWrapper.className = "mb-4 text-danger";
+            } else {
+                // Activate
+                titleEl.textContent = "Activate Role?";
+                actionTextEl.textContent = "activate";
+                confirmBtn.className = "btn btn-success";
+                confirmBtn.textContent = "Yes, Activate";
+                iconWrapper.className = "mb-4 text-success";
+            }
+        });
+
+        // Delete Modal Logic
+        var deleteModal = document.getElementById('deleteRoleModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var action = button.getAttribute('data-action');
+            var name = button.getAttribute('data-name');
+            var userCount = parseInt(button.getAttribute('data-user-count') || "0");
+
+            var form = deleteModal.querySelector('#deleteRoleForm');
+            var nameEl = deleteModal.querySelector('#deleteRoleName');
+            var countAlert = deleteModal.querySelector('#deleteUserCountAlert');
+            var countEl = deleteModal.querySelector('#deleteUserCount');
 
             form.action = action;
-            messageEl.innerHTML = message;
+            nameEl.textContent = name;
+
+            if (userCount > 0) {
+                countEl.textContent = userCount;
+                countAlert.classList.remove('d-none');
+            } else {
+                countAlert.classList.add('d-none');
+            }
         });
     </script>
 }

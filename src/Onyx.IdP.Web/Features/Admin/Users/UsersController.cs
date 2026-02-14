@@ -183,25 +183,9 @@ public class UsersController : Controller
         return View(model);
     }
 
-    [HttpGet("Delete/{id}")]
-    public async Task<IActionResult> Delete(string id)
-    {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null)
-        {
-            return NotFound();
-        }
-
-        return View(new DeleteUserViewModel
-        {
-            Id = user.Id,
-            Email = user.Email!
-        });
-    }
-
     [HttpPost("Delete/{id}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(string id, DeleteUserViewModel model)
+    public async Task<IActionResult> Delete(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null)
@@ -212,8 +196,8 @@ public class UsersController : Controller
         // Prevent deleting self
         if (User.Identity?.Name == user.UserName)
         {
-            ModelState.AddModelError(string.Empty, "You cannot delete your own account.");
-            return View(model);
+            TempData["Error"] = "You cannot delete your own account.";
+            return RedirectToAction(nameof(Index));
         }
 
         var result = await _userManager.DeleteAsync(user);
@@ -222,12 +206,10 @@ public class UsersController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        foreach (var error in result.Errors)
-        {
-            ModelState.AddModelError(string.Empty, error.Description);
-        }
-
-        return View(model);
+        // In a real scenario, we might want to show errors, but for a modal action redirecting back is often standard.
+        // We could use TempData to show "Failed to delete" if needed.
+        TempData["Error"] = "Failed to delete user.";
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpPost("ToggleActive/{id}")]

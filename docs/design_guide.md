@@ -101,3 +101,32 @@ Use alerts to display success or error messages to the user.
 - Styles should be reusable components where possible.
 - Example: Instead of styling a specific `div` on the error page, create a `.error-container` component that can be reused on any error-like page (as done for `Error.cshtml` and `NotFound.cshtml`).
 
+## 5. UI Patterns
+
+### Confirmation Modals
+We use a standardized "Action Modal" pattern for confirmations (Delete, Toggle Status, etc.) instead of separate pages.
+
+**Structure**:
+- **Wrapper**: Standard Bootstrap Modal (`.modal-dialog`, `.modal-content`).
+- **Body**: `.modal-body.text-center.p-5`
+- **Icon**: Large (48x48) Lucide icon in a colored wrapper (e.g., `.mb-4.text-danger`).
+- **Title**: `<h2>` with `.card-title.mb-3`.
+- **Description**: `<p>` with `.card-text.text-muted.mb-4`.
+- **Alert** (Optional): `.alert.alert-warning.mb-4` for dependency warnings.
+- **Actions**: `.d-grid.gap-2.mb-4` with Primary/Danger button and Ghost/Cancel button.
+
+**Example**:
+```html
+<div class="modal-body text-center p-5">
+    <div class="mb-4 text-danger">
+        <i data-lucide="alert-triangle" style="width: 48px; height: 48px;"></i>
+    </div>
+    <h2 class="card-title mb-3">Delete Item?</h2>
+    <p class="card-text text-muted mb-4">Are you sure?</p>
+    <div class="d-grid gap-2 mb-4">
+        <button class="btn btn-danger">Yes, Delete</button>
+        <button class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+    </div>
+</div>
+```
+

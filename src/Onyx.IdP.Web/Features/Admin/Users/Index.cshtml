@@ -98,9 +98,10 @@
                                     <button type="button" 
                                             class="btn btn-icon @(user.IsLockedOut ? "text-success" : "text-warning")"
                                             data-bs-toggle="modal" 
-                                            data-bs-target="#confirmModal"
+                                            data-bs-target="#toggleLockModal"
                                             data-action="@Url.Action("ToggleLock", new { id = user.Id })"
-                                            data-message="Are you sure you want to @(user.IsLockedOut ? "unlock" : "lock") <strong>@user.Email</strong>?"
+                                            data-email="@user.Email"
+                                            data-locked="@user.IsLockedOut.ToString().ToLower()"
                                             data-tooltip="@(user.IsLockedOut ? "Unlock" : "Lock")">
                                         <i data-lucide="@(user.IsLockedOut ? "unlock" : "lock")"></i>
                                     </button>
@@ -108,16 +109,23 @@
                                     <button type="button" 
                                             class="btn btn-icon @(user.IsActive ? "text-danger" : "text-success")"
                                             data-bs-toggle="modal" 
-                                            data-bs-target="#confirmModal"
+                                            data-bs-target="#toggleUserModal"
                                             data-action="@Url.Action("ToggleActive", new { id = user.Id })"
-                                            data-message="Are you sure you want to @(user.IsActive ? "deactivate" : "activate") <strong>@user.Email</strong>?"
+                                            data-email="@user.Email"
+                                            data-active="@user.IsActive.ToString().ToLower()"
                                             data-tooltip="@(user.IsActive ? "Deactivate" : "Activate")">
                                         <i data-lucide="@(user.IsActive ? "power-off" : "power")"></i>
                                     </button>
 
-                                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-icon text-danger" data-tooltip="Delete">
+                                    <button type="button" 
+                                            class="btn btn-icon text-danger"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteUserModal"
+                                            data-action="@Url.Action("Delete", new { id = user.Id })"
+                                            data-email="@user.Email"
+                                            data-tooltip="Delete">
                                         <i data-lucide="trash-2"></i>
-                                    </a>
+                                    </button>
                                 }
                                 else
                                 {
@@ -178,22 +186,84 @@
     </div>
 </div>
 
-<!-- Confirmation Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+<!-- Toggle User Active Modal -->
+<div class="modal fade" id="toggleUserModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Action</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmMessage">Are you sure?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                <form id="confirmForm" method="post">
+            <div class="modal-body text-center p-5">
+                <div id="toggleUserIconWrapper" class="mb-4">
+                    <i data-lucide="power" style="width: 48px; height: 48px;"></i>
+                </div>
+                
+                <h2 id="toggleUserTitle" class="card-title mb-3"></h2>
+                
+                <p class="card-text text-muted mb-4">
+                    Are you sure you want to <strong id="toggleUserActionText"></strong> the user <strong id="toggleUserEmail"></strong>?
+                </p>
+
+                <form id="toggleUserForm" method="post">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-primary">Confirm</button>
+                    <div class="d-grid gap-2">
+                        <button id="toggleUserConfirmBtn" type="submit" class="btn">Confirm</button>
+                        <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toggle User Lock Modal -->
+<div class="modal fade" id="toggleLockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div id="toggleLockIconWrapper" class="mb-4">
+                    <!-- Icon will be toggled via JS if possible, or just generic lock -->
+                    <i id="toggleLockIcon" data-lucide="lock" style="width: 48px; height: 48px;"></i>
+                </div>
+                
+                <h2 id="toggleLockTitle" class="card-title mb-3"></h2>
+                
+                <p class="card-text text-muted mb-4">
+                    Are you sure you want to <strong id="toggleLockActionText"></strong> the user <strong id="toggleLockEmail"></strong>?
+                </p>
+
+                <form id="toggleLockForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="d-grid gap-2">
+                        <button id="toggleLockConfirmBtn" type="submit" class="btn">Confirm</button>
+                        <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4 text-danger">
+                    <i data-lucide="alert-triangle" style="width: 48px; height: 48px;"></i>
+                </div>
+                
+                <h2 class="card-title mb-3">Delete User?</h2>
+                
+                <p class="card-text text-muted mb-4">
+                    Are you sure you want to delete the user <strong id="deleteUserEmail"></strong>?
+                    <br/>
+                    This action cannot be undone.
+                </p>
+
+                <form id="deleteUserForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">Yes, Delete User</button>
+                        <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -202,17 +272,88 @@
 
 @section Scripts {
     <script>
-        var confirmModal = document.getElementById('confirmModal');
-        confirmModal.addEventListener('show.bs.modal', function (event) {
+        // Toggle Active Logic
+        var toggleUserModal = document.getElementById('toggleUserModal');
+        toggleUserModal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget;
             var action = button.getAttribute('data-action');
-            var message = button.getAttribute('data-message');
+            var email = button.getAttribute('data-email');
+            var isActive = button.getAttribute('data-active') === 'true';
 
-            var form = confirmModal.querySelector('#confirmForm');
-            var messageEl = confirmModal.querySelector('#confirmMessage');
+            var form = toggleUserModal.querySelector('#toggleUserForm');
+            var titleEl = toggleUserModal.querySelector('#toggleUserTitle');
+            var actionTextEl = toggleUserModal.querySelector('#toggleUserActionText');
+            var emailEl = toggleUserModal.querySelector('#toggleUserEmail');
+            var confirmBtn = toggleUserModal.querySelector('#toggleUserConfirmBtn');
+            var iconWrapper = toggleUserModal.querySelector('#toggleUserIconWrapper');
 
             form.action = action;
-            messageEl.innerHTML = message;
+            emailEl.textContent = email;
+
+            if (isActive) {
+                // Deactivate
+                titleEl.textContent = "Deactivate User?";
+                actionTextEl.textContent = "deactivate";
+                confirmBtn.className = "btn btn-danger";
+                confirmBtn.textContent = "Yes, Deactivate";
+                iconWrapper.className = "mb-4 text-danger";
+            } else {
+                // Activate
+                titleEl.textContent = "Activate User?";
+                actionTextEl.textContent = "activate";
+                confirmBtn.className = "btn btn-success";
+                confirmBtn.textContent = "Yes, Activate";
+                iconWrapper.className = "mb-4 text-success";
+            }
+        });
+
+        // Toggle Lock Logic
+        var toggleLockModal = document.getElementById('toggleLockModal');
+        toggleLockModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var action = button.getAttribute('data-action');
+            var email = button.getAttribute('data-email');
+            var isLocked = button.getAttribute('data-locked') === 'true';
+
+            var form = toggleLockModal.querySelector('#toggleLockForm');
+            var titleEl = toggleLockModal.querySelector('#toggleLockTitle');
+            var actionTextEl = toggleLockModal.querySelector('#toggleLockActionText');
+            var emailEl = toggleLockModal.querySelector('#toggleLockEmail');
+            var confirmBtn = toggleLockModal.querySelector('#toggleLockConfirmBtn');
+            var iconWrapper = toggleLockModal.querySelector('#toggleLockIconWrapper');
+
+            form.action = action;
+            emailEl.textContent = email;
+
+            if (isLocked) {
+                // Unlock
+                titleEl.textContent = "Unlock User?";
+                actionTextEl.textContent = "unlock";
+                confirmBtn.className = "btn btn-success";
+                confirmBtn.textContent = "Yes, Unlock";
+                iconWrapper.className = "mb-4 text-success";
+            } else {
+                // Lock
+                titleEl.textContent = "Lock User?";
+                actionTextEl.textContent = "lock";
+                confirmBtn.className = "btn btn-warning"; // Warning for lock
+                confirmBtn.textContent = "Yes, Lock";
+                iconWrapper.className = "mb-4 text-warning";
+            }
+        });
+
+        // Delete Logic
+        var deleteUserModal = document.getElementById('deleteUserModal');
+        deleteUserModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var action = button.getAttribute('data-action');
+            var email = button.getAttribute('data-email');
+
+            var form = deleteUserModal.querySelector('#deleteUserForm');
+            var emailEl = deleteUserModal.querySelector('#deleteUserEmail');
+
+            form.action = action;
+            emailEl.textContent = email;
         });
     </script>
 }

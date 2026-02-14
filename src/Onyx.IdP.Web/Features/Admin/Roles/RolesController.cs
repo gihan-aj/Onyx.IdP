@@ -192,31 +192,9 @@ public class RolesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet("Delete/{id}")]
-    public async Task<IActionResult> Delete(string id)
-    {
-        var role = await _roleManager.FindByIdAsync(id);
-        if (role == null) return NotFound();
-
-        if (role.Name == "SuperAdmin" || role.Name == "User")
-        {
-            TempData["Error"] = $"Cannot delete {role.Name} role.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
-
-        return View(new DeleteRoleViewModel
-        {
-            Id = role.Id,
-            Name = role.Name!,
-            UserCount = usersInRole.Count
-        });
-    }
-
     [HttpPost("Delete/{id}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(string id, DeleteRoleViewModel model)
+    public async Task<IActionResult> Delete(string id)
     {
         var role = await _roleManager.FindByIdAsync(id);
         if (role == null) return NotFound();
@@ -227,30 +205,15 @@ public class RolesController : Controller
              return RedirectToAction(nameof(Index));
         }
 
-        if (model.UnassignUsers)
+        // Unassign users automatically
+        var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
+        foreach (var user in usersInRole)
         {
-            var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
-            foreach (var user in usersInRole)
-            {
-                await _userManager.RemoveFromRoleAsync(user, role.Name!);
-            }
+            await _userManager.RemoveFromRoleAsync(user, role.Name!);
         }
 
-        var result = await _roleManager.DeleteAsync(role);
-        if (result.Succeeded)
-        {
-            return RedirectToAction(nameof(Index));
-        }
-
-        foreach (var error in result.Errors)
-        {
-             ModelState.AddModelError(string.Empty, error.Description);
-        }
-
-        var currentUsers = await _userManager.GetUsersInRoleAsync(role.Name!);
-        model.UserCount = currentUsers.Count;
-        model.Name = role.Name!;
-
-        return View(model);
+        await _roleManager.DeleteAsync(role);
+        
+        return RedirectToAction(nameof(Index));
     }
 }

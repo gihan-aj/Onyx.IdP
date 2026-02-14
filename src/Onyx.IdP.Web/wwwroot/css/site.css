@@ -339,7 +339,7 @@ a:hover {
     /* green-900 */
     background-color: #d1fae5;
     /* green-100 */
-    border-color: #a7f3d0;
+    /*    border-color: #a7f3d0;*/
     /* green-200 */
 }
 
@@ -348,8 +348,17 @@ a:hover {
     /* red-800 */
     background-color: #fee2e2;
     /* red-100 */
-    border-color: #fecaca;
+    /*    border-color: #fecaca;*/
     /* red-200 */
+}
+
+.alert-warning {
+    color: #92400e;
+    /* amber-800 */
+    background-color: #fef3c7;
+    /* amber-100 */
+    /*    border-color: #fde68a;*/
+    /* amber-200 */
 }
 
 /* Home Page Specifics */
@@ -522,6 +531,26 @@ a:hover {
 
 .btn-danger:hover {
     background-color: #dc2626;
+    color: white;
+}
+
+.btn-success {
+    background-color: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #059669;
+    color: white;
+}
+
+.btn-warning {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover {
+    background-color: #d97706;
     color: white;
 }
 

@@ -1,0 +1,54 @@
+@model Onyx.IdP.Web.Features.Admin.Scopes.CreateScopeViewModel
+@{
+    ViewData["Title"] = "Create Scope";
+    Layout = "_AdminLayout";
+    ViewData["AuthCardClass"] = "auth-card-md"; // Reusing auth card style for simple forms
+}
+
+<div class="container d-flex justify-content-center">
+    <div class="auth-card auth-card-md">
+        <div class="auth-header">
+            <h2 class="text-center">Create New Scope</h2>
+            <p class="text-muted text-center">Define a new OpenID Connect scope</p>
+        </div>
+
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="form-label">Scope Name (ID)</label>
+                <input asp-for="Name" class="form-control" placeholder="e.g. invoice_api" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+                <small class="text-muted">Unique identifier for the scope (no spaces).</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="DisplayName" class="form-label">Display Name</label>
+                <input asp-for="DisplayName" class="form-control" placeholder="e.g. Invoice API" />
+                <span asp-validation-for="DisplayName" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="2" placeholder="e.g. Access the Invoice management system"></textarea>
+                <span asp-validation-for="Description" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Resources" class="form-label">Resources (Audiences)</label>
+                <input asp-for="Resources" class="form-control" placeholder="e.g. invoice_backend_api" />
+                <span asp-validation-for="Resources" class="text-danger small"></span>
+                <small class="text-muted">Space-separated list of resource servers that accept this scope.</small>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">Create Scope</button>
+                <a asp-action="Index" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
