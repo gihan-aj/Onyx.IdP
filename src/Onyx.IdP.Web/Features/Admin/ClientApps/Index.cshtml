@@ -1,0 +1,120 @@
+@model Onyx.IdP.Web.Features.Admin.ClientApps.ClientAppListViewModel
+@{
+    ViewData["Title"] = "Client Applications";
+    Layout = "_AdminLayout";
+}
+
+<div class="data-table-container">
+    <div class="table-controls">
+        <div class="search-box">
+            <!-- Search implementation later if needed -->
+            <h3 class="card-title">Client Applications</h3>
+        </div>
+        <div class="table-actions">
+            <a asp-action="Create" class="btn btn-primary btn-md">
+                + New Client
+            </a>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Client ID</th>
+                <th>Display Name</th>
+                <th>Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Clients.Any())
+            {
+                foreach (var client in Model.Clients)
+                {
+                    <tr>
+                        <td>
+                            <code class="text-primary">@client.ClientId</code>
+                        </td>
+                        <td>
+                            <span class="font-weight-bold">@client.DisplayName</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary text-white">@client.Type</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a asp-action="Edit" asp-route-id="@client.Id" class="btn btn-icon" data-tooltip="Edit">
+                                    <i data-lucide="edit-2"></i>
+                                </a>
+
+                                <button type="button" 
+                                        class="btn btn-icon text-danger"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteClientModal"
+                                        data-action="@Url.Action("Delete", new { id = client.Id })"
+                                        data-name="@client.DisplayName"
+                                        data-tooltip="Delete">
+                                    <i data-lucide="trash-2"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center py-4">
+                        <span class="text-muted">No client applications found.</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Delete Client Modal -->
+<div class="modal fade" id="deleteClientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4 text-danger">
+                    <i data-lucide="alert-triangle" style="width: 48px; height: 48px;"></i>
+                </div>
+                
+                <h2 class="card-title mb-3">Delete Client?</h2>
+                
+                <p class="card-text text-muted mb-4">
+                    Are you sure you want to delete the client application <strong id="deleteClientName"></strong>?
+                    <br/>
+                    This action cannot be undone.
+                </p>
+
+                <form id="deleteClientForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">Yes, Delete Client</button>
+                        <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var deleteModal = document.getElementById('deleteClientModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var action = button.getAttribute('data-action');
+            var name = button.getAttribute('data-name');
+
+            var form = deleteModal.querySelector('#deleteClientForm');
+            var nameEl = deleteModal.querySelector('#deleteClientName');
+
+            form.action = action;
+            nameEl.textContent = name;
+        });
+    </script>
+}

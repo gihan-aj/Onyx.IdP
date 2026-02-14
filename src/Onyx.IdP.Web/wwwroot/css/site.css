@@ -418,6 +418,41 @@ a:hover {
     margin-bottom: 0.5rem;
 }
 
+/* Card Component */
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: var(--surface-color);
+    background-clip: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+}
+
+.card-body {
+    flex: 1 1 auto;
+    padding: 1.5rem;
+}
+
+.card-title {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--text-color);
+}
+
+.card-text {
+    margin-bottom: 1rem;
+}
+
+.form-text {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
 /* Grid System */
 .row {
     display: flex;
@@ -427,6 +462,13 @@ a:hover {
 }
 
 .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+}
+
+.col-12 {
     flex: 0 0 100%;
     max-width: 100%;
     padding-right: 0.75rem;
@@ -659,6 +701,10 @@ a:hover {
 /* Border Utilities */
 .border {
     border: 1px solid var(--border-color) !important;
+}
+
+.border-0 {
+    border: 0 !important;
 }
 
 .rounded {

@@ -1,0 +1,75 @@
+@model Onyx.IdP.Web.Features.Admin.ClientApps.ClientAppFormViewModel
+
+<div class="row">
+    <div class="col-md-6">
+        <h4 class="mb-3">General Information</h4>
+        <div class="form-group mb-3">
+            <label asp-for="ClientId" class="form-label">Client ID</label>
+            <input asp-for="ClientId" class="form-control" placeholder="e.g. my_web_app" />
+            <span asp-validation-for="ClientId" class="text-danger small"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="DisplayName" class="form-label">Display Name</label>
+            <input asp-for="DisplayName" class="form-control" placeholder="e.g. My Web App" />
+            <span asp-validation-for="DisplayName" class="text-danger small"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="ClientSecret" class="form-label">Client Secret</label>
+            <input asp-for="ClientSecret" class="form-control" type="password" placeholder="@(Model.Id != null ? "Leave blank to keep existing secret" : "Generate or enter a secret")" />
+            <span asp-validation-for="ClientSecret" class="text-danger small"></span>
+            @if (Model.Id != null)
+            {
+                <div class="form-text text-muted">Leave blank to keep the current secret.</div>
+            }
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <h4 class="mb-3">Grant Types</h4>
+        <div class="card p-3 mb-4 bg-light border-0">
+            <div class="form-check">
+                <input asp-for="GrantAuthorizationCode" class="form-check-input" />
+                <label asp-for="GrantAuthorizationCode" class="form-check-label">Authorization Code (Web/Mobile)</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="GrantClientCredentials" class="form-check-input" />
+                <label asp-for="GrantClientCredentials" class="form-check-label">Client Credentials (M2M)</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="GrantRefreshToken" class="form-check-input" />
+                <label asp-for="GrantRefreshToken" class="form-check-label">Refresh Token</label>
+            </div>
+        </div>
+
+        <h4 class="mb-3">Allowed Scopes</h4>
+        <div class="card p-3 mb-4 bg-light border-0" style="max-height: 200px; overflow-y: auto;">
+            @for (int i = 0; i < Model.Scopes.Count; i++)
+            {
+                <div class="form-check">
+                    <input type="hidden" asp-for="Scopes[i].Name" />
+                    <input asp-for="Scopes[i].Selected" class="form-check-input" />
+                    <label asp-for="Scopes[i].Selected" class="form-check-label">@Model.Scopes[i].Name</label>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <h4 class="mb-3">Redirect Configuration</h4>
+        <div class="form-group mb-3">
+            <label asp-for="RedirectUris" class="form-label">Redirect URIs (One per line)</label>
+            <textarea asp-for="RedirectUris" class="form-control" rows="3" placeholder="https://myapp.com/signin-oidc"></textarea>
+            <span asp-validation-for="RedirectUris" class="text-danger small"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="PostLogoutRedirectUris" class="form-label">Post Logout Redirect URIs (One per line)</label>
+            <textarea asp-for="PostLogoutRedirectUris" class="form-control" rows="2" placeholder="https://myapp.com/signout-callback-oidc"></textarea>
+            <span asp-validation-for="PostLogoutRedirectUris" class="text-danger small"></span>
+        </div>
+    </div>
+</div>
