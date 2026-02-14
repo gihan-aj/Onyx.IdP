@@ -22,6 +22,7 @@ public class DataSeeder
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
 
         await context.Database.EnsureCreatedAsync();
 
@@ -51,6 +52,57 @@ public class DataSeeder
             await userManager.AddToRoleAsync(user, "SuperAdmin");
         }
 
+        // Seed Scopes
+        if (await scopeManager.FindByNameAsync(OpenIddictConstants.Scopes.Email) is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = OpenIddictConstants.Scopes.Email,
+                DisplayName = "Email Access",
+                Description = "Access to your email address."
+            });
+        }
+
+        if (await scopeManager.FindByNameAsync(OpenIddictConstants.Scopes.Profile) is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = OpenIddictConstants.Scopes.Profile,
+                DisplayName = "Profile Access",
+                Description = "Access to your profile details."
+            });
+        }
+
+        if (await scopeManager.FindByNameAsync(OpenIddictConstants.Scopes.Roles) is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = OpenIddictConstants.Scopes.Roles,
+                DisplayName = "Role Access",
+                Description = "Access to your roles."
+            });
+        }
+
+        if (await scopeManager.FindByNameAsync(OpenIddictConstants.Scopes.OfflineAccess) is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = OpenIddictConstants.Scopes.OfflineAccess,
+                DisplayName = "Offline Access",
+                Description = "Access to your data when you are offline."
+            });
+        }
+
+        if (await scopeManager.FindByNameAsync("api") is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = "api",
+                DisplayName = "API Access",
+                Description = "Access to the API."
+            });
+        }
+
         // Seed Postman Client
         if (await manager.FindByClientIdAsync("postman") is null)
         {
@@ -59,13 +111,24 @@ public class DataSeeder
                 ClientId = "postman",
                 ClientSecret = "postman-secret",
                 DisplayName = "Postman",
+                RedirectUris = { new Uri("https://oauth.pstmn.io/v1/callback") },
                 Permissions =
                 {
                     OpenIddictConstants.Permissions.Endpoints.Authorization,
                     OpenIddictConstants.Permissions.Endpoints.Token,
+                    OpenIddictConstants.Permissions.Endpoints.EndSession,
+                    OpenIddictConstants.Permissions.Endpoints.Introspection,
+                    
                     OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
                     OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
                     OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+                    
+                    OpenIddictConstants.Permissions.ResponseTypes.Code,
+                    
+                    OpenIddictConstants.Permissions.Scopes.Email,
+                    OpenIddictConstants.Permissions.Scopes.Profile,
+                    OpenIddictConstants.Permissions.Scopes.Roles,
+                    OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.OfflineAccess,
                     OpenIddictConstants.Permissions.Prefixes.Scope + "api"
                 }
             });

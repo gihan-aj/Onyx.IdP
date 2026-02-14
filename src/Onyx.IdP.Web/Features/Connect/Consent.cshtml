@@ -1,0 +1,64 @@
+@model Onyx.IdP.Web.Features.Connect.ConsentViewModel
+@{
+    ViewData["Title"] = "Consent Required";
+    Layout = "_AuthLayout";
+    ViewData["AuthCardClass"] = "auth-card-sm";
+}
+
+<div class="auth-header">
+    <h1 class="auth-title">Authorization Required</h1>
+    <p class="auth-subtitle">
+        The application <span class="font-weight-bold text-primary">@(Model?.ApplicationName ?? "Unknown App")</span> 
+        is requesting access to your account.
+    </p>
+</div>
+
+<div class="alert alert-warning">
+    <div class="d-flex">
+        <div class="ml-3">
+            <h3 class="text-sm font-weight-bold text-warning mb-2">
+                The application wants to:
+            </h3>
+            <ul class="text-sm pl-4" style="list-style-type: disc; padding-left: 1.5rem;">
+                @if (Model?.ScopeDescriptions != null)
+                {
+                    @foreach (var scope in Model.ScopeDescriptions)
+                    {
+                        <li>@scope</li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<form asp-controller="Connect" asp-action="Authorize" method="post" class="auth-form">
+    <!-- Note: Data Annotations and Tag Helpers automatically handle AntiForgeryToken if not disabled, 
+         but we keep explicit token here if the controller expects it or for clarity. 
+         Ideally, remove @Html.AntiForgeryToken() if using tag helpers and allow framework to handle it, 
+         but since the endpoint has IgnoreAntiforgeryToken, this is harmless. -->
+    
+    @if (!string.IsNullOrEmpty(Model?.ReturnUrl))
+    {
+        var currentUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Model.ReturnUrl}";
+        var queryParameters = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(new Uri(currentUrl).Query);
+
+        foreach (var parameter in queryParameters)
+        {
+            <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+        }
+    }
+
+    <p class="text-sm text-center text-muted mb-4">
+        Do you allow this application to access your data?
+    </p>
+
+    <div class="d-flex gap-2">
+        <button type="submit" name="consent_action" value="accept" class="btn btn-primary w-100">
+            Allow
+        </button>
+        <button type="submit" name="consent_action" value="deny" class="btn btn-outline w-100">
+            Deny
+        </button>
+    </div>
+</form>
