@@ -24,7 +24,7 @@ A comprehensive Admin UI built with ASP.NET Core MVC:
     -   Action Modal workflow for critical operations.
 
 ### Architecture & Tech Stack
--   **Framework**: ASP.NET Core 8 / 9
+-   **Framework**: ASP.NET Core 10
 -   **Persistence**: Entity Framework Core (SQL Server)
 -   **Architecture**: **Vertical Slice Architecture** organizing code by feature (e.g., `Features/Admin/Users`, `Features/Connect`) rather than technical layers, promoting cohesion and maintainability.
 -   **Background Jobs**: [Quartz.NET](https://www.quartz-scheduler.net/) for automated cleanup of expired tokens and consents.
@@ -33,7 +33,7 @@ A comprehensive Admin UI built with ASP.NET Core MVC:
 ## Getting Started
 
 ### Prerequisites
--   .NET 8.0 SDK or later
+-   .NET 10 SDK
 -   SQL Server (LocalDB or full instance)
 
 ### Installation
