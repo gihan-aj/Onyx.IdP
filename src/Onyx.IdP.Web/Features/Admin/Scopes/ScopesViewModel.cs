@@ -29,6 +29,8 @@ public class ScopeDto
 
 public class CreateScopeViewModel
 {
+    [System.ComponentModel.DataAnnotations.Required]
+    [System.ComponentModel.DataAnnotations.RegularExpression("^[a-zA-Z0-9_]+$", ErrorMessage = "Scope name must contain only alphanumeric characters and underscores.")]
     public string Name { get; set; } = string.Empty;
     public string? DisplayName { get; set; }
     public string? Description { get; set; }

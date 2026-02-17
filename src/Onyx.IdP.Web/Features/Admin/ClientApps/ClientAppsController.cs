@@ -161,7 +161,7 @@ public class ClientAppsController : Controller
             Id = id,
             ClientId = descriptor.ClientId ?? string.Empty,
             DisplayName = descriptor.DisplayName ?? string.Empty,
-            RedirectUris = string.Join("\n", descriptor.RedirectUris),
+            RedirectUris = descriptor.RedirectUris.Count > 0 ? string.Join("\n", descriptor.RedirectUris) : null,
             PostLogoutRedirectUris = string.Join("\n", descriptor.PostLogoutRedirectUris),
             GrantAuthorizationCode = descriptor.Permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode),
             GrantClientCredentials = descriptor.Permissions.Contains(OpenIddictConstants.Permissions.GrantTypes.ClientCredentials),

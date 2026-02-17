@@ -157,5 +157,33 @@ public class DataSeeder
                 }
             });
         }
+
+        // Seed Order Management System Client (Machine-to-Machine)
+        if (await manager.FindByClientIdAsync("order-system") is null)
+        {
+            await manager.CreateAsync(new OpenIddictApplicationDescriptor
+            {
+                ClientId = "order-system",
+                ClientSecret = "order-system-secret",
+                DisplayName = "Order Management System",
+                Permissions =
+                {
+                    OpenIddictConstants.Permissions.Endpoints.Token,
+                    OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "idp_roles_manage"
+                }
+            });
+        }
+
+        // Seed Custom Scope for Role Management
+        if (await scopeManager.FindByNameAsync("idp_roles_manage") is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = "idp_roles_manage",
+                DisplayName = "Role Management",
+                Description = "Manage roles and user assignments."
+            });
+        }
     }
 }

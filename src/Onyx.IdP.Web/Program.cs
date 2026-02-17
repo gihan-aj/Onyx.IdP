@@ -96,12 +96,17 @@ builder.Services.AddOpenIddict()
         // without needing to register them in code (Program.cs).
         //options.DisableScopeValidation();
     })
-    // C. Validation: Needed if this app also consumes tokens (e.g. UserInfo endpoint)
     .AddValidation(options =>
     {
         options.UseLocalServer();
         options.UseAspNetCore();
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RoleManagementPolicy", policy =>
+        policy.RequireClaim(OpenIddictConstants.Claims.Scope, "idp_roles_manage"));
+});
 
 // QUARTZ CONFIGURATION
 // =============================================================================

@@ -7,6 +7,12 @@
             <label asp-for="ClientId" class="form-label">Client ID</label>
             <input asp-for="ClientId" class="form-control" placeholder="e.g. my_web_app" />
             <span asp-validation-for="ClientId" class="text-danger small"></span>
+            @if (Model.Id != null)
+            {
+                <div class="text-warning small mt-1">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Warning: Changing the Client ID may break existing integrations.
+                </div>
+            }
         </div>
 
         <div class="form-group mb-3">

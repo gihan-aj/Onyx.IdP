@@ -141,7 +141,7 @@ namespace Onyx.IdP.Web.Features.Connect
             identity.AddClaim(Claims.Email, await _userManager.GetEmailAsync(user) ?? "");
             
             // Add Active Roles
-            var activeRoles = await GetActiveRolesAsync(user);
+            var activeRoles = await GetActiveRolesAsync(user, clientId);
             foreach (var role in activeRoles)
             {
                 identity.AddClaim(Claims.Role, role);
@@ -220,7 +220,7 @@ namespace Onyx.IdP.Web.Features.Connect
                 identity.AddClaim(Claims.Email, await _userManager.GetEmailAsync(user) ?? "");
 
                 // Add Active Roles
-                var activeRoles = await GetActiveRolesAsync(user);
+                var activeRoles = await GetActiveRolesAsync(user, request.ClientId ?? "");
                 foreach (var role in activeRoles)
                 {
                     identity.AddClaim(Claims.Role, role);
@@ -322,7 +322,14 @@ namespace Onyx.IdP.Web.Features.Connect
 
             if (User.HasScope(Scopes.Roles))
             {
-                claims[Claims.Role] = await GetActiveRolesAsync(user);
+                var clientId = User.FindFirst(Claims.ClientId)?.Value 
+                               ?? User.FindFirst("client_id")?.Value 
+                               ?? User.FindFirst("azp")?.Value;
+
+                if (!string.IsNullOrEmpty(clientId))
+                {
+                    claims[Claims.Role] = await GetActiveRolesAsync(user, clientId);
+                }
             }
 
             return Ok(claims);
@@ -346,17 +353,21 @@ namespace Onyx.IdP.Web.Features.Connect
         // HELPER METHODS
         // -------------------------------------------------------------------------
 
-        private async Task<List<string>> GetActiveRolesAsync(ApplicationUser user)
+        private async Task<List<string>> GetActiveRolesAsync(ApplicationUser user, string clientId)
         {
             var allRoleNames = await _userManager.GetRolesAsync(user);
             var activeRoles = new List<string>();
+            var prefix = $"{clientId}_";
 
             foreach (var roleName in allRoleNames)
             {
                 var role = await _roleManager.FindByNameAsync(roleName);
                 if (role != null && role.IsActive)
                 {
-                    activeRoles.Add(roleName);
+                    if (roleName.StartsWith(prefix))
+                    {
+                        activeRoles.Add(roleName.Substring(prefix.Length));
+                    }
                 }
             }
             return activeRoles;

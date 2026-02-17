@@ -22,6 +22,7 @@ public class ClientAppFormViewModel
 
     [Required]
     [Display(Name = "Client ID")]
+    [RegularExpression("^[a-zA-Z0-9\\-]+$", ErrorMessage = "Client ID must contain only alphanumeric characters and hyphens.")]
     public string ClientId { get; set; } = string.Empty;
 
     [Required]
@@ -32,8 +33,7 @@ public class ClientAppFormViewModel
     public string? ClientSecret { get; set; } // Optional for edits
 
     [Display(Name = "Redirect URIs")]
-    [Required]
-    public string RedirectUris { get; set; } = string.Empty;
+    public string? RedirectUris { get; set; }
 
     [Display(Name = "Post Logout Redirect URIs")]
     public string? PostLogoutRedirectUris { get; set; }
