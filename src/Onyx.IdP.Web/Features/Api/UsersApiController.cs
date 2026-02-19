@@ -60,11 +60,24 @@ public class UsersController : ControllerBase
     [Authorize(Policy = "RoleManagementPolicy")]
     public async Task<IActionResult> InviteUser([FromBody] CreateUserRequest request)
     {
-        // For Client Credentials flow, the User.Identity.Name is the ClientId
-        var clientId = User.Identity?.Name;
+        // For Client Credentials flow, the User.Identity.Name is often null.
+        // We need to check the 'sub' or 'client_id' claim.
+        var clientId = User.FindFirst("client_id")?.Value 
+                       ?? User.FindFirst("sub")?.Value 
+                       ?? User.Identity?.Name;
+
         if (string.IsNullOrEmpty(clientId))
         {
              return BadRequest("Could not determine Client ID.");
+        }
+
+        // If a TargetClientId is provided, use that instead (assuming the caller is authorized to do so)
+        if (!string.IsNullOrEmpty(request.TargetClientId))
+        {
+            // In a real scenario, you might want to validate that 'clientId' (e.g. onyx-oms)
+            // is allowed to manage 'request.TargetClientId' (e.g. order-system).
+            // For now, we trust the 'idp_roles_manage' scope holder.
+            clientId = request.TargetClientId;
         }
 
         var prefixedRoleName = $"{clientId}_{request.RoleName}";
@@ -138,11 +151,24 @@ public class UsersController : ControllerBase
     [Authorize(Policy = "RoleManagementPolicy")]
     public async Task<IActionResult> AssignRole(string userId, [FromBody] AssignRoleRequest request)
     {
-        // For Client Credentials flow, the User.Identity.Name is the ClientId
-        var clientId = User.Identity?.Name;
+        // For Client Credentials flow, the User.Identity.Name is often null.
+        // We need to check the 'sub' or 'client_id' claim.
+        var clientId = User.FindFirst("client_id")?.Value 
+                       ?? User.FindFirst("sub")?.Value 
+                       ?? User.Identity?.Name;
+
         if (string.IsNullOrEmpty(clientId))
         {
              return BadRequest("Could not determine Client ID.");
+        }
+
+        // If a TargetClientId is provided, use that instead (assuming the caller is authorized to do so)
+        if (!string.IsNullOrEmpty(request.TargetClientId))
+        {
+            // In a real scenario, you might want to validate that 'clientId' (e.g. onyx-oms)
+            // is allowed to manage 'request.TargetClientId' (e.g. order-system).
+            // For now, we trust the 'idp_roles_manage' scope holder.
+            clientId = request.TargetClientId;
         }
 
         var prefixedRoleName = $"{clientId}_{request.RoleName}";

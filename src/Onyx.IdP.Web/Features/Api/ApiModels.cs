@@ -6,6 +6,8 @@ public class CreateRoleRequest
 {
     [Required]
     public string Name { get; set; } = string.Empty;
+
+    public string? TargetClientId { get; set; }
 }
 
 public class UserDto
@@ -27,10 +29,27 @@ public class CreateUserRequest
 
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+
+    public string? TargetClientId { get; set; }
 }
 
 public class AssignRoleRequest
 {
     [Required]
     public string RoleName { get; set; } = string.Empty;
+
+    public string? TargetClientId { get; set; }
+}
+
+public class RoleStatusRequest
+{
+    public string? TargetClientId { get; set; }
+}
+
+public class UpdateRoleNameRequest
+{
+    [Required]
+    public string NewName { get; set; } = string.Empty;
+
+    public string? TargetClientId { get; set; }
 }
