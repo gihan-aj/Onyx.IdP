@@ -91,13 +91,15 @@ Creates a new user account, sends a welcome email with a password setup link, an
 ```json
 {
   "email": "john@company.com",
-  "roleName": "RefundClerk",
+  "roleNames": [
+    "RefundClerk"
+  ],
   "firstName": "John",
   "lastName": "Doe",
   "targetClientId": "order-system"
 }
 ```
-*Note: `roleName` should be the short name (e.g., "RefundClerk"). The system will automatically look for `order-system_RefundClerk`.*
+*Note: `roleNames` should contain the short names (e.g., "RefundClerk"). The system will automatically look for `order-system_RefundClerk`.*
 
 **Response:** `200 OK`
 ```json
@@ -110,8 +112,8 @@ Creates a new user account, sends a welcome email with a password setup link, an
 }
 ```
 
-### Assign Role
-Assigns an additional role to an existing user.
+### Assign Roles
+Assigns additional roles to an existing user.
 
 **Endpoint:** `POST /api/users/{userId}/roles`
 
@@ -121,7 +123,9 @@ Assigns an additional role to an existing user.
 **Request Body:**
 ```json
 {
-  "roleName": "InventoryManager",
+  "roleNames": [
+    "InventoryManager"
+  ],
   "targetClientId": "order-system"
 }
 ```
@@ -129,6 +133,9 @@ Assigns an additional role to an existing user.
 **Response:** `200 OK`
 ```json
 {
-  "message": "Role 'InventoryManager' assigned successfully."
+  "message": "Roles assigned successfully.",
+  "assignedRoles": [
+    "InventoryManager"
+  ]
 }
 ```

@@ -80,12 +80,19 @@ public class UsersController : ControllerBase
             clientId = request.TargetClientId;
         }
 
-        var prefixedRoleName = $"{clientId}_{request.RoleName}";
-
-        // 1. Check if role exists
-        if (!await _roleManager.RoleExistsAsync(prefixedRoleName))
+        // 1. Check if roles exist
+        if (request.RoleNames == null || request.RoleNames.Count == 0)
         {
-            return BadRequest(new { message = $"Role '{request.RoleName}' does not exist." });
+            return BadRequest(new { message = "At least one role must be provided." });
+        }
+
+        foreach (var roleName in request.RoleNames)
+        {
+            var prefixedRoleName = $"{clientId}_{roleName}";
+            if (!await _roleManager.RoleExistsAsync(prefixedRoleName))
+            {
+                return BadRequest(new { message = $"Role '{roleName}' does not exist." });
+            }
         }
 
         // 2. Check if user exists
@@ -112,8 +119,12 @@ public class UsersController : ControllerBase
             return BadRequest(result.Errors);
         }
 
-        // 4. Assign Role
-        await _userManager.AddToRoleAsync(user, prefixedRoleName);
+        // 4. Assign Roles
+        foreach (var roleName in request.RoleNames)
+        {
+            var prefixedRoleName = $"{clientId}_{roleName}";
+            await _userManager.AddToRoleAsync(user, prefixedRoleName);
+        }
 
         // 5. Generate Password Reset Token (as Invitation Token)
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -149,7 +160,7 @@ public class UsersController : ControllerBase
 
     [HttpPost("{userId}/roles")]
     [Authorize(Policy = "RoleManagementPolicy")]
-    public async Task<IActionResult> AssignRole(string userId, [FromBody] AssignRoleRequest request)
+    public async Task<IActionResult> AssignRoles(string userId, [FromBody] AssignRolesRequest request)
     {
         // For Client Credentials flow, the User.Identity.Name is often null.
         // We need to check the 'sub' or 'client_id' claim.
@@ -171,30 +182,51 @@ public class UsersController : ControllerBase
             clientId = request.TargetClientId;
         }
 
-        var prefixedRoleName = $"{clientId}_{request.RoleName}";
-
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
             return NotFound(new { message = "User not found." });
         }
 
-        if (!await _roleManager.RoleExistsAsync(prefixedRoleName))
+        if (request.RoleNames == null || request.RoleNames.Count == 0)
         {
-            return BadRequest(new { message = $"Role '{request.RoleName}' does not exist." });
+            return BadRequest(new { message = "At least one role must be provided." });
         }
 
-        if (await _userManager.IsInRoleAsync(user, prefixedRoleName))
+        var assignedRoles = new List<string>();
+        var errors = new List<object>();
+
+        foreach (var roleName in request.RoleNames)
         {
-            return Ok(new { message = $"User is already in role '{request.RoleName}'." });
+            var prefixedRoleName = $"{clientId}_{roleName}";
+
+            if (!await _roleManager.RoleExistsAsync(prefixedRoleName))
+            {
+                errors.Add(new { role = roleName, error = "Role does not exist." });
+                continue;
+            }
+
+            if (await _userManager.IsInRoleAsync(user, prefixedRoleName))
+            {
+                continue; // Already assigned
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, prefixedRoleName);
+            if (result.Succeeded)
+            {
+                assignedRoles.Add(roleName);
+            }
+            else
+            {
+                errors.Add(new { role = roleName, errors = result.Errors.Select(e => e.Description) });
+            }
         }
 
-        var result = await _userManager.AddToRoleAsync(user, prefixedRoleName);
-        if (!result.Succeeded)
+        if (errors.Any())
         {
-            return BadRequest(result.Errors);
+            return BadRequest(new { message = "Errors occurred during role assignment.", assignedRoles, errors });
         }
 
-        return Ok(new { message = $"Role '{request.RoleName}' assigned successfully." });
+        return Ok(new { message = "Roles assigned successfully.", assignedRoles });
     }
 }

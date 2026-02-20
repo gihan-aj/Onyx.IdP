@@ -25,7 +25,7 @@ public class CreateUserRequest
     public string Email { get; set; } = string.Empty;
 
     [Required]
-    public string RoleName { get; set; } = string.Empty;
+    public List<string> RoleNames { get; set; } = new();
 
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
@@ -33,10 +33,10 @@ public class CreateUserRequest
     public string? TargetClientId { get; set; }
 }
 
-public class AssignRoleRequest
+public class AssignRolesRequest
 {
     [Required]
-    public string RoleName { get; set; } = string.Empty;
+    public List<string> RoleNames { get; set; } = new();
 
     public string? TargetClientId { get; set; }
 }
