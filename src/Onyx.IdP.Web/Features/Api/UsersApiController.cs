@@ -145,7 +145,7 @@ public class UsersController : ControllerBase
             CallbackUrl = callbackUrl!
         };
 
-        var emailBody = await _razorRenderer.RenderViewToStringAsync("/Views/Shared/EmailTemplates/UserInvitationTemplate.cshtml", emailModel);
+        var emailBody = await _razorRenderer.RenderViewToStringAsync("EmailTemplates/UserInvitationTemplate", emailModel);
         await _emailSender.SendEmailAsync(user.Email!, "You're invited to Onyx Identity", emailBody);
 
         return Ok(new UserDto
@@ -228,5 +228,51 @@ public class UsersController : ControllerBase
         }
 
         return Ok(new { message = "Roles assigned successfully.", assignedRoles });
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> RegisterUser([FromBody] RegisterUserRequest request)
+    {
+        // 1. Check if user exists
+        var existingUser = await _userManager.FindByEmailAsync(request.Email);
+        if (existingUser != null)
+        {
+            return Conflict(new { message = $"User with email '{request.Email}' already exists." });
+        }
+
+        // 2. Create User
+        var user = new ApplicationUser
+        {
+            UserName = request.Email,
+            Email = request.Email,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            TenantId = request.TenantId,
+            IsActive = true,
+            EmailConfirmed = false
+        };
+
+        var result = await _userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        // 3. Generate Email Confirmation Token
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+        // Construct Callback URL (pointing to the Auth/ConfirmEmail page)
+        var callbackUrl = Url.Action(
+            "ConfirmEmail", 
+            "Auth", 
+            new { userId = user.Id, code = token }, 
+            protocol: Request.Scheme);
+
+        // 4. Send Email
+        var emailBody = await _razorRenderer.RenderViewToStringAsync("EmailTemplates/EmailConfirmationTemplate", callbackUrl);
+        await _emailSender.SendEmailAsync(user.Email!, "Confirm your email", emailBody);
+
+        // 5. Return User ID
+        return Ok(new { userId = user.Id });
     }
 }
