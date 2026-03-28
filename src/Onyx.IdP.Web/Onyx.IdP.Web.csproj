@@ -23,4 +23,10 @@
     <ProjectReference Include="..\Onyx.IdP.Infrastructure\Onyx.IdP.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="openiddict-cert.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

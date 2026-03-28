@@ -2,17 +2,21 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using OpenIddict.Abstractions;
 using Onyx.IdP.Core.Entities;
-using Onyx.IdP.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Onyx.IdP.Core.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Onyx.IdP.Infrastructure.Data;
 
 public class DataSeeder
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly OpenIddictClientsOptions _clientsOptions;
 
-    public DataSeeder(IServiceProvider serviceProvider)
+    public DataSeeder(IServiceProvider serviceProvider, IOptions<OpenIddictClientsOptions> openIddictClientsOptions)
     {
         _serviceProvider = serviceProvider;
+        _clientsOptions = openIddictClientsOptions.Value;
     }
 
     public async Task SeedAsync()
@@ -24,7 +28,7 @@ public class DataSeeder
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
         var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
 
-        await context.Database.EnsureCreatedAsync();
+        await context.Database.MigrateAsync();
 
         // Seed Roles
         if (!await roleManager.RoleExistsAsync("SuperAdmin"))
@@ -46,7 +50,8 @@ public class DataSeeder
                 Email = adminEmail,
                 EmailConfirmed = true,
                 FirstName = "Super",
-                LastName = "Admin"
+                LastName = "Admin",
+                TenantId = Guid.Empty
             };
             await userManager.CreateAsync(user, "Admin123!");
             await userManager.AddToRoleAsync(user, "SuperAdmin");
@@ -93,96 +98,66 @@ public class DataSeeder
             });
         }
 
-        if (await scopeManager.FindByNameAsync("api") is null)
+        if (await scopeManager.FindByNameAsync("oms_api") is null)
         {
             await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
             {
-                Name = "api",
-                DisplayName = "API Access",
-                Description = "Access to the API."
+                Name = "oms_api",
+                DisplayName = "OMS API Access",
+                Description = "Access to the Order Management System API.",
+                Resources = { _clientsOptions.OmsApi.ClientId }
             });
         }
 
-        if (await scopeManager.FindByNameAsync("ims_resource_server") is null)
+        // Seed Public Client
+        if (await manager.FindByClientIdAsync(_clientsOptions.OmsClient.ClientId) is null)
         {
-            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            var desktopAppDescriptor = new OpenIddictApplicationDescriptor
             {
-                Name = "ims_resource_server",
-                DisplayName = "IMS API",
-                Description = "Access the Inventory management system.",
-                Resources = { "ims_backend_api" }
-            });
-        }
-
-        if (await scopeManager.FindByNameAsync("invoice_api") is null)
-        {
-            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
-            {
-                Name = "invoice_api",
-                DisplayName = "Invoice API",
-                Description = "Access the Invoice management system.",
-                Resources = { "invoice_backend_api" }
-            });
-        }
-
-        // Seed Postman Client
-        if (await manager.FindByClientIdAsync("postman") is null)
-        {
-            await manager.CreateAsync(new OpenIddictApplicationDescriptor
-            {
-                ClientId = "postman",
-                ClientSecret = "postman-secret",
-                DisplayName = "Postman",
-                RedirectUris = { new Uri("https://oauth.pstmn.io/v1/callback") },
+                ClientId = _clientsOptions.OmsClient.ClientId,
+                DisplayName = _clientsOptions.OmsClient.DisplayName,
+                ClientType = OpenIddictConstants.ClientTypes.Public,
                 Permissions =
                 {
                     OpenIddictConstants.Permissions.Endpoints.Authorization,
                     OpenIddictConstants.Permissions.Endpoints.Token,
                     OpenIddictConstants.Permissions.Endpoints.EndSession,
-                    OpenIddictConstants.Permissions.Endpoints.Introspection,
-                    
+
                     OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-                    OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
                     OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
-                    
+
                     OpenIddictConstants.Permissions.ResponseTypes.Code,
-                    
+
                     OpenIddictConstants.Permissions.Scopes.Email,
                     OpenIddictConstants.Permissions.Scopes.Profile,
                     OpenIddictConstants.Permissions.Scopes.Roles,
                     OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.OfflineAccess,
-                    OpenIddictConstants.Permissions.Prefixes.Scope + "api",
-                    OpenIddictConstants.Permissions.Prefixes.Scope + "ims_resource_server",
-                    OpenIddictConstants.Permissions.Prefixes.Scope + "invoice_api"
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "oms_api",
                 }
-            });
+            };
+
+            foreach( var uri in _clientsOptions.OmsClient.RedirectUris)
+            {
+                desktopAppDescriptor.RedirectUris.Add(new Uri(uri));
+            }
+
+            await manager.CreateAsync(desktopAppDescriptor);
         }
 
         // Seed Order Management System Client (Machine-to-Machine)
-        if (await manager.FindByClientIdAsync("order-system") is null)
+        if (await manager.FindByClientIdAsync(_clientsOptions.OmsApi.ClientId) is null)
         {
             await manager.CreateAsync(new OpenIddictApplicationDescriptor
             {
-                ClientId = "order-system",
-                ClientSecret = "order-system-secret",
-                DisplayName = "Order Management System",
+                ClientId = _clientsOptions.OmsApi.ClientId,
+                ClientSecret = _clientsOptions.OmsApi.ClientSecret,
+                DisplayName = _clientsOptions.OmsApi.DisplayName,
                 Permissions =
                 {
                     OpenIddictConstants.Permissions.Endpoints.Token,
+                    OpenIddictConstants.Permissions.Endpoints.Introspection,
                     OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
-                    OpenIddictConstants.Permissions.Prefixes.Scope + "idp_roles_manage"
                 }
-            });
-        }
-
-        // Seed Custom Scope for Role Management
-        if (await scopeManager.FindByNameAsync("idp_roles_manage") is null)
-        {
-            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
-            {
-                Name = "idp_roles_manage",
-                DisplayName = "Role Management",
-                Description = "Manage roles and user assignments."
             });
         }
     }

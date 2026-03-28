@@ -3,6 +3,7 @@ using Onyx.IdP.Infrastructure;
 using Onyx.IdP.Infrastructure.Data;
 using OpenIddict.Abstractions;
 using Quartz;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,10 @@ builder.Services.AddInfrastructureServices(builder.Configuration.GetConnectionSt
 
 // Configure Email Settings
 builder.Services.Configure<Onyx.IdP.Core.Settings.EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+// Configure OpenIddict client 
+builder.Services.Configure<Onyx.IdP.Core.Settings.OpenIddictClientsOptions>(
+    builder.Configuration.GetSection(Onyx.IdP.Core.Settings.OpenIddictClientsOptions.SectionName));
 
 // Register RazorViewToStringRenderer
 builder.Services.AddTransient<Onyx.IdP.Web.Services.IRazorViewToStringRenderer, Onyx.IdP.Web.Services.RazorViewToStringRenderer>();
@@ -39,6 +44,15 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
 
 // OPENIDDICT CONFIGURATION
 // =============================================================================
+var certFileName = builder.Configuration["Certificate:FileName"];
+var certPassword = builder.Configuration["Certificate:Password"];
+var certPath = Path.Combine(AppContext.BaseDirectory, certFileName!);
+
+// Load the certificate
+var certificate = X509CertificateLoader.LoadPkcs12FromFile(
+    certPath,
+    certPassword);
+
 builder.Services.AddOpenIddict()
     // A. Core: Integrate with EF Core to store tokens/apps in DB
     .AddCore(options =>
@@ -69,13 +83,12 @@ builder.Services.AddOpenIddict()
             OpenIddictConstants.Scopes.Profile,
             OpenIddictConstants.Scopes.Roles,
             OpenIddictConstants.Scopes.OfflineAccess,
-            "api");
+            "oms_api");
 
-        // 4. Security (Dev only: Ephemeral keys)
-        // IN PRODUCTION: Use .AddEncryptionCertificate() and .AddSigningCertificate()
-        options.AddDevelopmentEncryptionCertificate()
-               .AddDevelopmentSigningCertificate()
-               .DisableAccessTokenEncryption();
+        // 4. Security 
+        options.AddEncryptionCertificate(certificate)
+            .AddSigningCertificate(certificate)
+            .DisableAccessTokenEncryption();
 
         // 5. ASP.NET Core Integration
         options.UseAspNetCore()
@@ -84,7 +97,8 @@ builder.Services.AddOpenIddict()
                .EnableTokenEndpointPassthrough()
                .EnableAuthorizationEndpointPassthrough()
                .EnableUserInfoEndpointPassthrough()
-               .EnableEndSessionEndpointPassthrough();
+               .EnableEndSessionEndpointPassthrough()
+               .DisableTransportSecurityRequirement();
 
         // Disable Transport Security Requirement for Development/Container
         // if (builder.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
@@ -130,7 +144,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
