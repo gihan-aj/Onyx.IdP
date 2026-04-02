@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Onyx.IdP.Core.Entities;
+using Onyx.IdP.Infrastructure.Extensions;
 
 namespace Onyx.IdP.Web.Features.Admin.Users;
 
-[Authorize(Roles = "SuperAdmin,Admin")]
+[Authorize(Roles = Core.Constants.Roles.Idp.Admin)]
 [Route("Admin/[controller]")]
 public class UsersController : Controller
 {
@@ -116,9 +117,9 @@ public class UsersController : Controller
         return View(model);
     }
 
-    [HttpPost("Edit/{id}")]
+    [HttpPost("Edit/{id:guid}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(string id, UserFormViewModel model)
+    public async Task<IActionResult> Edit(Guid id, UserFormViewModel model)
     {
         if (id != model.Id)
         {
@@ -155,9 +156,9 @@ public class UsersController : Controller
             var rolesToRemove = currentRoles.Except(selectedRoles).ToList();
 
             // Safety check: specific protection for admin@onyx.com
-            if (user.Email == "admin@onyx.com" && rolesToRemove.Contains("SuperAdmin"))
+            if (user.Email == Core.Constants.Users.Idp.Admin && rolesToRemove.Contains(Core.Constants.Roles.Idp.Admin))
             {
-                rolesToRemove.Remove("SuperAdmin"); // Silently keep SuperAdmin
+                rolesToRemove.Remove(Core.Constants.Roles.Idp.Admin); // Silently keep SuperAdmin
                 // Or we could re-add it to SelectedRoles to be consistent, but preventing removal is enough.
             }
 
@@ -165,8 +166,8 @@ public class UsersController : Controller
             // (Optional, but good practice. The user explicitly asked about "your own roles")
             if (User.Identity?.Name == user.UserName)
             {
-                 if (rolesToRemove.Contains("SuperAdmin")) rolesToRemove.Remove("SuperAdmin");
-                 if (rolesToRemove.Contains("Admin")) rolesToRemove.Remove("Admin");
+                 if (rolesToRemove.Contains(Core.Constants.Roles.Idp.Admin)) rolesToRemove.Remove(Core.Constants.Roles.Idp.Admin);
+                 //if (rolesToRemove.Contains("Admin")) rolesToRemove.Remove("Admin");
             }
 
             if (rolesToAdd.Any()) await _userManager.AddToRolesAsync(user, rolesToAdd);

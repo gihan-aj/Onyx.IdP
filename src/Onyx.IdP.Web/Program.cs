@@ -1,4 +1,5 @@
 using Onyx.IdP.Core;
+using Onyx.IdP.Core.Constants;
 using Onyx.IdP.Infrastructure;
 using Onyx.IdP.Infrastructure.Data;
 using OpenIddict.Abstractions;
@@ -83,7 +84,8 @@ builder.Services.AddOpenIddict()
             OpenIddictConstants.Scopes.Profile,
             OpenIddictConstants.Scopes.Roles,
             OpenIddictConstants.Scopes.OfflineAccess,
-            "oms_api");
+            AuthScopes.OmsApi,
+            AuthScopes.IdpApi);
 
         // 4. Security 
         options.AddEncryptionCertificate(certificate)

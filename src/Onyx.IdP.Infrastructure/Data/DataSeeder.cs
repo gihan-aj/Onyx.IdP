@@ -5,6 +5,7 @@ using Onyx.IdP.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Onyx.IdP.Core.Settings;
 using Microsoft.Extensions.Options;
+using Onyx.IdP.Core.Constants;
 
 namespace Onyx.IdP.Infrastructure.Data;
 
@@ -12,12 +13,6 @@ public class DataSeeder
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly OpenIddictClientsOptions _clientsOptions;
-
-    public static class KnownIds
-    {
-        public static readonly Guid HostTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-        public static readonly Guid PlatformAdminUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-    }
 
     public DataSeeder(IServiceProvider serviceProvider, IOptions<OpenIddictClientsOptions> openIddictClientsOptions)
     {
@@ -37,89 +32,64 @@ public class DataSeeder
         await context.Database.MigrateAsync();
 
         // Seed Roles
-        if (!await roleManager.RoleExistsAsync("SuperAdmin"))
+        if (!await roleManager.RoleExistsAsync(Roles.Idp.Admin))
         {
-            await roleManager.CreateAsync(new ApplicationRole { Name = "SuperAdmin", Description = "System Administrator", IsActive = true });
+            await roleManager.CreateAsync(new ApplicationRole { Name = Roles.Idp.Admin, Description = "Identity Provider Administrator", IsActive = true });
         }
-        if (!await roleManager.RoleExistsAsync("User"))
+        if (!await roleManager.RoleExistsAsync(Roles.Idp.StandardUser))
         {
-            await roleManager.CreateAsync(new ApplicationRole { Name = "User", Description = "Standard user role", IsActive = true });
+            await roleManager.CreateAsync(new ApplicationRole { Name = Roles.Idp.StandardUser, Description = "Standard authenticated user", IsActive = true });
         }
 
         // Seed Admin User
-        var adminEmail = "admin@onyx.com";
+        var adminEmail = Core.Constants.Users.Idp.Admin;
         if (await userManager.FindByEmailAsync(adminEmail) == null)
         {
             var user = new ApplicationUser
             {
+                Id = KnownIds.PlatformAdminUserId,
                 UserName = adminEmail,
                 Email = adminEmail,
                 EmailConfirmed = true,
-                FirstName = "Super",
+                FirstName = "System",
                 LastName = "Admin",
-                TenantId = Guid.Empty
+                TenantId = KnownIds.HostTenantId
             };
             await userManager.CreateAsync(user, "Admin123!");
-            await userManager.AddToRoleAsync(user, "SuperAdmin");
+            await userManager.AddToRoleAsync(user, Roles.Idp.Admin);
         }
 
         // Seed Scopes
-        if (await scopeManager.FindByNameAsync(OpenIddictConstants.Scopes.Email) is null)
+        var scopesToCreate = new[]
         {
-            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
-            {
-                Name = OpenIddictConstants.Scopes.Email,
-                DisplayName = "Email Access",
-                Description = "Access to your email address."
-            });
+            (OpenIddictConstants.Scopes.Email, "Email Access", "Access to your email address."),
+            (OpenIddictConstants.Scopes.Profile, "Profile Access", "Access to your profile details."),
+            (OpenIddictConstants.Scopes.Roles, "Role Access", "Access to your roles."),
+            (OpenIddictConstants.Scopes.OfflineAccess, "Offline Access", "Access to your data when you are offline.")
+        };
+
+        foreach(var (name, display, desc) in scopesToCreate)
+        {
+            if(await scopeManager.FindByNameAsync(name) is null)
+                await scopeManager.CreateAsync(new OpenIddictScopeDescriptor { Name = name, DisplayName = display, Description = desc });
         }
 
-        if (await scopeManager.FindByNameAsync(OpenIddictConstants.Scopes.Profile) is null)
+        if (await scopeManager.FindByNameAsync(AuthScopes.OmsApi) is null)
         {
             await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
             {
-                Name = OpenIddictConstants.Scopes.Profile,
-                DisplayName = "Profile Access",
-                Description = "Access to your profile details."
-            });
-        }
-
-        if (await scopeManager.FindByNameAsync(OpenIddictConstants.Scopes.Roles) is null)
-        {
-            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
-            {
-                Name = OpenIddictConstants.Scopes.Roles,
-                DisplayName = "Role Access",
-                Description = "Access to your roles."
-            });
-        }
-
-        if (await scopeManager.FindByNameAsync(OpenIddictConstants.Scopes.OfflineAccess) is null)
-        {
-            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
-            {
-                Name = OpenIddictConstants.Scopes.OfflineAccess,
-                DisplayName = "Offline Access",
-                Description = "Access to your data when you are offline."
-            });
-        }
-
-        if (await scopeManager.FindByNameAsync("oms_api") is null)
-        {
-            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
-            {
-                Name = "oms_api",
+                Name = AuthScopes.OmsApi,
                 DisplayName = "OMS API Access",
                 Description = "Access to the Order Management System API.",
                 Resources = { _clientsOptions.OmsApi.ClientId }
             });
         }
 
-        if (await scopeManager.FindByNameAsync("idp_api") is null)
+        if (await scopeManager.FindByNameAsync(AuthScopes.IdpApi) is null)
         {
             await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
             {
-                Name = "idp_api",
+                Name = AuthScopes.IdpApi,
                 DisplayName = "IdP Internal API",
                 Description = "Allows backend services to manage users in the IdP."
             });
@@ -148,7 +118,7 @@ public class DataSeeder
                     OpenIddictConstants.Permissions.Scopes.Profile,
                     OpenIddictConstants.Permissions.Scopes.Roles,
                     OpenIddictConstants.Permissions.Prefixes.Scope + OpenIddictConstants.Scopes.OfflineAccess,
-                    OpenIddictConstants.Permissions.Prefixes.Scope + "oms_api",
+                    OpenIddictConstants.Permissions.Prefixes.Scope + AuthScopes.OmsApi,
                 }
             };
 
@@ -174,7 +144,7 @@ public class DataSeeder
                     OpenIddictConstants.Permissions.Endpoints.Introspection,
                     OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
 
-                    OpenIddictConstants.Permissions.Prefixes.Scope + "idp_api"
+                    OpenIddictConstants.Permissions.Prefixes.Scope + AuthScopes.IdpApi
                 }
             });
         }

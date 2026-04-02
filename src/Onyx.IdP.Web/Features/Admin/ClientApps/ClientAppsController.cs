@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Abstractions;
-using Onyx.IdP.Web.Features.Admin.ClientApps; // Ensure namespace is correct
 
 namespace Onyx.IdP.Web.Features.Admin.ClientApps;
 
-[Authorize(Roles = "SuperAdmin,Admin")]
+[Authorize(Roles = Core.Constants.Roles.Idp.Admin)]
 [Route("Admin/[controller]")]
 public class ClientAppsController : Controller
 {

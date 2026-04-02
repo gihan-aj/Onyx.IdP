@@ -20,12 +20,12 @@ public class RolesViewModel
 
 public class RoleDto
 {
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; }
     
-    public bool IsProtected => Name == "SuperAdmin" || Name == "User";
-    public bool IsSuperAdmin => Name == "SuperAdmin";
+    public bool IsProtected => Name == Core.Constants.Roles.Idp.Admin || Name == Core.Constants.Roles.Idp.StandardUser;
+    public bool IsSuperAdmin => Name == Core.Constants.Roles.Idp.Admin;
     public int UserCount { get; set; }
 }

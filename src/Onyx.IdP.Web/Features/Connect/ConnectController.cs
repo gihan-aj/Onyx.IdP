@@ -10,6 +10,7 @@ using OpenIddict.Server.AspNetCore;
 using Onyx.IdP.Core.Entities;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Microsoft.AspNetCore;
+using Onyx.IdP.Core.Constants;
 
 namespace Onyx.IdP.Web.Features.Connect
 {
@@ -137,10 +138,7 @@ namespace Onyx.IdP.Web.Features.Connect
             identity.AddClaim(Claims.Name, await _userManager.GetUserNameAsync(user) ?? user.UserName ?? "Unknown User");
             identity.AddClaim(Claims.Email, await _userManager.GetEmailAsync(user) ?? "");
 
-            if (user.TenantId.HasValue)
-            {
-                identity.AddClaim("tenant_id", user.TenantId?.ToString() ?? string.Empty);
-            }
+            identity.AddClaim(CustomClaims.TenantId, user.TenantId.ToString());
 
             identity.SetScopes(scopes);
             var resources = await _scopeManager.ListResourcesAsync(scopes).ToListAsync();
@@ -210,10 +208,7 @@ namespace Onyx.IdP.Web.Features.Connect
                 identity.AddClaim(Claims.Name, await _userManager.GetUserNameAsync(user) ?? user.UserName ?? "Unknown User");
                 identity.AddClaim(Claims.Email, await _userManager.GetEmailAsync(user) ?? "");
 
-                if (user.TenantId.HasValue)
-                {
-                    identity.AddClaim("tenant_id", user.TenantId?.ToString() ?? string.Empty);
-                }
+                identity.AddClaim(CustomClaims.TenantId, user.TenantId.ToString());
 
                 var grantedScopes = result.Principal.GetScopes();
                 identity.SetScopes(grantedScopes);
@@ -311,10 +306,7 @@ namespace Onyx.IdP.Web.Features.Connect
                 claims[Claims.FamilyName] = user.LastName ?? "";
             }
 
-            if (user.TenantId.HasValue)
-            {
-                claims["tenant_id"] = user.TenantId?.ToString() ?? string.Empty;
-            }
+            claims[CustomClaims.TenantId] = user.TenantId.ToString();
 
             return Ok(claims);
         }
@@ -381,7 +373,7 @@ namespace Onyx.IdP.Web.Features.Connect
                     yield return Destinations.AccessToken;
                     if (principal.HasScope(Scopes.Roles)) yield return Destinations.IdentityToken;
                     yield break;
-                case "tenant_id":
+                case CustomClaims.TenantId:
                     yield return Destinations.AccessToken;
                     yield return Destinations.IdentityToken;
                     yield break;

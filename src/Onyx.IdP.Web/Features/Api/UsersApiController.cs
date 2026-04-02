@@ -234,19 +234,19 @@ public class UsersController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> RegisterUser([FromBody] RegisterUserRequest request)
     {
-        if (!User.HasScope("idp_api"))
+        if (!User.HasScope(Core.Constants.AuthScopes.IdpApi))
         {
             return Forbid();
         }
 
-        // 1. Check if user exists
+        // Check if user exists
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser != null)
         {
             return Conflict(new { message = $"User with email '{request.Email}' already exists." });
         }
 
-        // 2. Create User
+        // Create User
         var user = new ApplicationUser
         {
             UserName = request.Email,
@@ -264,7 +264,9 @@ public class UsersController : ControllerBase
             return BadRequest(result.Errors);
         }
 
-        // 3. Generate Email Confirmation Token
+        await _userManager.AddToRoleAsync(user, Core.Constants.Roles.Idp.StandardUser);
+
+        // Generate Email Confirmation Token
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
         // Construct Callback URL (pointing to the Auth/ConfirmEmail page)
@@ -274,11 +276,11 @@ public class UsersController : ControllerBase
             new { userId = user.Id, code = token }, 
             protocol: Request.Scheme);
 
-        // 4. Send Email
+        // Send Email
         var emailBody = await _razorRenderer.RenderViewToStringAsync("EmailTemplates/EmailConfirmationTemplate", callbackUrl);
         await _emailSender.SendEmailAsync(user.Email!, "Confirm your email", emailBody);
 
-        // 5. Return User ID
+        // Return User ID
         return Ok(new { userId = user.Id });
     }
 }

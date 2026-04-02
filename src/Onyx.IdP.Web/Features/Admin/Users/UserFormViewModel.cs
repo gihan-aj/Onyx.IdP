@@ -4,7 +4,7 @@ namespace Onyx.IdP.Web.Features.Admin.Users;
 
 public class UserFormViewModel
 {
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; }
 
     [Required]
     [EmailAddress]

@@ -4,7 +4,7 @@ namespace Onyx.IdP.Web.Features.Admin.Roles;
 
 public class RoleFormViewModel
 {
-    public string? Id { get; set; }
+    public Guid? Id { get; set; }
 
     [Required(ErrorMessage = "Role Name is required")]
     [StringLength(256, ErrorMessage = "Role Name cannot exceed 256 characters")]

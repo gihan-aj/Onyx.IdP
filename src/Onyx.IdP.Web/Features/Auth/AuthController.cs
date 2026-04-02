@@ -65,7 +65,7 @@ public class AuthController : Controller
                 _logger.LogInformation("User created a new account with password.");
 
                 // Assign default role
-                await _userManager.AddToRoleAsync(user, "User");
+                await _userManager.AddToRoleAsync(user, Core.Constants.Roles.Idp.StandardUser);
 
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 // In a real app, generate a callback URL and send email

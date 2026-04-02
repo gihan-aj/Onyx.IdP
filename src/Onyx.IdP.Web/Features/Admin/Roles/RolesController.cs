@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Onyx.IdP.Core.Entities;
+using Onyx.IdP.Infrastructure.Extensions;
 
 namespace Onyx.IdP.Web.Features.Admin.Roles;
 
-[Authorize(Roles = "SuperAdmin,Admin")]
+[Authorize(Roles = Core.Constants.Roles.Idp.Admin)]
 [Route("Admin/[controller]")]
 public class RolesController : Controller
 {
@@ -130,9 +131,9 @@ public class RolesController : Controller
         });
     }
 
-    [HttpPost("Edit/{id}")]
+    [HttpPost("Edit/{id:guid}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(string id, RoleFormViewModel model)
+    public async Task<IActionResult> Edit(Guid id, RoleFormViewModel model)
     {
         if (id != model.Id) return BadRequest();
         if (!ModelState.IsValid) return View(model);
@@ -141,14 +142,14 @@ public class RolesController : Controller
         if (role == null) return NotFound();
 
         // Protect SuperAdmin name change
-        if (role.Name == "SuperAdmin" && model.Name != "SuperAdmin")
+        if (role.Name == Core.Constants.Roles.Idp.Admin && model.Name != Core.Constants.Roles.Idp.Admin)
         {
-             ModelState.AddModelError(string.Empty, "Cannot change the name of the SuperAdmin role.");
+             ModelState.AddModelError(string.Empty, "Cannot change the name of the Administrator role.");
              return View(model);
         }
         
         // Protect User name change
-        if (role.Name == "User" && model.Name != "User")
+        if (role.Name == Core.Constants.Roles.Idp.StandardUser && model.Name != Core.Constants.Roles.Idp.StandardUser)
         {
              ModelState.AddModelError(string.Empty, "Cannot change the name of the User role.");
              return View(model);
@@ -180,7 +181,7 @@ public class RolesController : Controller
         if (role == null) return NotFound();
 
         // Prevent deactivating protected roles
-        if (role.Name == "SuperAdmin" || role.Name == "User")
+        if (role.Name == Core.Constants.Roles.Idp.Admin || role.Name == Core.Constants.Roles.Idp.StandardUser)
         {
             TempData["Error"] = $"Cannot deactivate {role.Name} role.";
             return RedirectToAction(nameof(Index));
@@ -199,7 +200,7 @@ public class RolesController : Controller
         var role = await _roleManager.FindByIdAsync(id);
         if (role == null) return NotFound();
 
-        if (role.Name == "SuperAdmin" || role.Name == "User")
+        if (role.Name == Core.Constants.Roles.Idp.Admin || role.Name == Core.Constants.Roles.Idp.StandardUser)
         {
              TempData["Error"] = $"Cannot delete {role.Name} role.";
              return RedirectToAction(nameof(Index));

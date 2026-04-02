@@ -4,7 +4,7 @@ using OpenIddict.Abstractions;
 
 namespace Onyx.IdP.Web.Features.Admin.Scopes;
 
-[Authorize(Roles = "SuperAdmin,Admin")]
+[Authorize(Roles = Core.Constants.Roles.Idp.Admin)]
 public class ScopesController : Controller
 {
     private readonly IOpenIddictScopeManager _scopeManager;
