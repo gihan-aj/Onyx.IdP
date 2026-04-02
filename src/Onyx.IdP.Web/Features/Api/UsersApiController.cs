@@ -5,6 +5,7 @@ using Onyx.IdP.Core.Entities;
 using Onyx.IdP.Core.Interfaces;
 using Onyx.IdP.Web.Features.Shared;
 using Onyx.IdP.Web.Services;
+using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 
 namespace Onyx.IdP.Web.Features.Api;
@@ -233,6 +234,11 @@ public class UsersController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> RegisterUser([FromBody] RegisterUserRequest request)
     {
+        if (!User.HasScope("idp_api"))
+        {
+            return Forbid();
+        }
+
         // 1. Check if user exists
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser != null)

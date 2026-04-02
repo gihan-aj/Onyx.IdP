@@ -13,6 +13,12 @@ public class DataSeeder
     private readonly IServiceProvider _serviceProvider;
     private readonly OpenIddictClientsOptions _clientsOptions;
 
+    public static class KnownIds
+    {
+        public static readonly Guid HostTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        public static readonly Guid PlatformAdminUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    }
+
     public DataSeeder(IServiceProvider serviceProvider, IOptions<OpenIddictClientsOptions> openIddictClientsOptions)
     {
         _serviceProvider = serviceProvider;
@@ -109,6 +115,16 @@ public class DataSeeder
             });
         }
 
+        if (await scopeManager.FindByNameAsync("idp_api") is null)
+        {
+            await scopeManager.CreateAsync(new OpenIddictScopeDescriptor
+            {
+                Name = "idp_api",
+                DisplayName = "IdP Internal API",
+                Description = "Allows backend services to manage users in the IdP."
+            });
+        }
+
         // Seed Public Client
         if (await manager.FindByClientIdAsync(_clientsOptions.OmsClient.ClientId) is null)
         {
@@ -157,6 +173,8 @@ public class DataSeeder
                     OpenIddictConstants.Permissions.Endpoints.Token,
                     OpenIddictConstants.Permissions.Endpoints.Introspection,
                     OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
+
+                    OpenIddictConstants.Permissions.Prefixes.Scope + "idp_api"
                 }
             });
         }

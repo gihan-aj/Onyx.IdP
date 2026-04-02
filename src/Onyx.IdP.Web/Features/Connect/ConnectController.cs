@@ -20,21 +20,18 @@ namespace Onyx.IdP.Web.Features.Connect
         private readonly IOpenIddictScopeManager _scopeManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<ApplicationRole> _roleManager;
 
         public ConnectController(
             IOpenIddictApplicationManager applicationManager,
             IOpenIddictAuthorizationManager authorizationManager,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager,
             IOpenIddictScopeManager scopeManager)
         {
             _applicationManager = applicationManager;
             _authorizationManager = authorizationManager;
             _signInManager = signInManager;
             _userManager = userManager;
-            _roleManager = roleManager;
             _scopeManager = scopeManager;
         }
 
@@ -69,7 +66,7 @@ namespace Onyx.IdP.Web.Features.Connect
             {
                  var userId = _userManager.GetUserId(principal)
                         ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                        ?? principal.FindFirst("sub")?.Value;
+                        ?? principal.FindFirst(Claims.Subject)?.Value;
 
                 if (userId != null) user = await _userManager.FindByIdAsync(userId);
             }
@@ -139,12 +136,10 @@ namespace Onyx.IdP.Web.Features.Connect
             identity.AddClaim(Claims.Subject, userIdString);
             identity.AddClaim(Claims.Name, await _userManager.GetUserNameAsync(user) ?? user.UserName ?? "Unknown User");
             identity.AddClaim(Claims.Email, await _userManager.GetEmailAsync(user) ?? "");
-            
-            // Add Active Roles
-            var activeRoles = await GetActiveRolesAsync(user, clientId);
-            foreach (var role in activeRoles)
+
+            if (user.TenantId.HasValue)
             {
-                identity.AddClaim(Claims.Role, role);
+                identity.AddClaim("tenant_id", user.TenantId?.ToString() ?? string.Empty);
             }
 
             identity.SetScopes(scopes);
@@ -190,7 +185,7 @@ namespace Onyx.IdP.Web.Features.Connect
                 {
                     var userId = _userManager.GetUserId(result.Principal)
                             ?? result.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                            ?? result.Principal.FindFirst("sub")?.Value;
+                            ?? result.Principal.FindFirst(Claims.Subject)?.Value;
                     if (userId != null) user = await _userManager.FindByIdAsync(userId);
                 }
 
@@ -204,10 +199,6 @@ namespace Onyx.IdP.Web.Features.Connect
                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The user is no longer allowed to sign in."
                        }));
                 }
-
-                // Note: For authorization code flow, we reuse the principal stored in the authorization code.
-                // However, if we want to refresh claims (like roles) on token refresh, we should rebuild the identity.
-                // For simplicity here, we rebuild it to ensure active roles are checked again.
                 
                 var identity = new ClaimsIdentity(
                     authenticationType: TokenValidationParameters.DefaultAuthenticationType,
@@ -219,11 +210,9 @@ namespace Onyx.IdP.Web.Features.Connect
                 identity.AddClaim(Claims.Name, await _userManager.GetUserNameAsync(user) ?? user.UserName ?? "Unknown User");
                 identity.AddClaim(Claims.Email, await _userManager.GetEmailAsync(user) ?? "");
 
-                // Add Active Roles
-                var activeRoles = await GetActiveRolesAsync(user, request.ClientId ?? "");
-                foreach (var role in activeRoles)
+                if (user.TenantId.HasValue)
                 {
-                    identity.AddClaim(Claims.Role, role);
+                    identity.AddClaim("tenant_id", user.TenantId?.ToString() ?? string.Empty);
                 }
 
                 var grantedScopes = result.Principal.GetScopes();
@@ -318,18 +307,13 @@ namespace Onyx.IdP.Web.Features.Connect
             {
                 claims[Claims.Name] = await _userManager.GetUserNameAsync(user) ?? "";
                 claims[Claims.PreferredUsername] = await _userManager.GetUserNameAsync(user) ?? "";
+                claims[Claims.GivenName] = user.FirstName ?? "";
+                claims[Claims.FamilyName] = user.LastName ?? "";
             }
 
-            if (User.HasScope(Scopes.Roles))
+            if (user.TenantId.HasValue)
             {
-                var clientId = User.FindFirst(Claims.ClientId)?.Value 
-                               ?? User.FindFirst("client_id")?.Value 
-                               ?? User.FindFirst("azp")?.Value;
-
-                if (!string.IsNullOrEmpty(clientId))
-                {
-                    claims[Claims.Role] = await GetActiveRolesAsync(user, clientId);
-                }
+                claims["tenant_id"] = user.TenantId?.ToString() ?? string.Empty;
             }
 
             return Ok(claims);
@@ -352,26 +336,6 @@ namespace Onyx.IdP.Web.Features.Connect
         // -------------------------------------------------------------------------
         // HELPER METHODS
         // -------------------------------------------------------------------------
-
-        private async Task<List<string>> GetActiveRolesAsync(ApplicationUser user, string clientId)
-        {
-            var allRoleNames = await _userManager.GetRolesAsync(user);
-            var activeRoles = new List<string>();
-            var prefix = $"{clientId}_";
-
-            foreach (var roleName in allRoleNames)
-            {
-                var role = await _roleManager.FindByNameAsync(roleName);
-                if (role != null && role.IsActive)
-                {
-                    if (roleName.StartsWith(prefix))
-                    {
-                        activeRoles.Add(roleName.Substring(prefix.Length));
-                    }
-                }
-            }
-            return activeRoles;
-        }
 
         private async Task<IEnumerable<string>> GetScopeDescriptions(IEnumerable<string> scopes)
         {
@@ -416,6 +380,10 @@ namespace Onyx.IdP.Web.Features.Connect
                 case Claims.Role:
                     yield return Destinations.AccessToken;
                     if (principal.HasScope(Scopes.Roles)) yield return Destinations.IdentityToken;
+                    yield break;
+                case "tenant_id":
+                    yield return Destinations.AccessToken;
+                    yield return Destinations.IdentityToken;
                     yield break;
                 case "permission":
                     yield return Destinations.AccessToken;
