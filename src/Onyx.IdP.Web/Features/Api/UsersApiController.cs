@@ -255,7 +255,7 @@ public class UsersController : ControllerBase
             LastName = request.LastName,
             TenantId = request.TenantId,
             IsActive = true,
-            EmailConfirmed = false
+            EmailConfirmed = true
         };
 
         var result = await _userManager.CreateAsync(user, request.Password);
@@ -267,18 +267,18 @@ public class UsersController : ControllerBase
         await _userManager.AddToRoleAsync(user, Core.Constants.Roles.Idp.StandardUser);
 
         // Generate Email Confirmation Token
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        //var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-        // Construct Callback URL (pointing to the Auth/ConfirmEmail page)
-        var callbackUrl = Url.Action(
-            "ConfirmEmail", 
-            "Auth", 
-            new { userId = user.Id, code = token }, 
-            protocol: Request.Scheme);
+        //// Construct Callback URL (pointing to the Auth/ConfirmEmail page)
+        //var callbackUrl = Url.Action(
+        //    "ConfirmEmail", 
+        //    "Auth", 
+        //    new { userId = user.Id, code = token }, 
+        //    protocol: Request.Scheme);
 
         // Send Email
-        var emailBody = await _razorRenderer.RenderViewToStringAsync("EmailTemplates/EmailConfirmationTemplate", callbackUrl);
-        await _emailSender.SendEmailAsync(user.Email!, "Confirm your email", emailBody);
+        //var emailBody = await _razorRenderer.RenderViewToStringAsync("EmailTemplates/EmailConfirmationTemplate", callbackUrl);
+        //await _emailSender.SendEmailAsync(user.Email!, "Confirm your email", emailBody);
 
         // Return User ID
         return Ok(new { userId = user.Id });
