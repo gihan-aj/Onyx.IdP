@@ -96,7 +96,8 @@ public class DataSeeder
         }
 
         // Seed Public Client
-        if (await manager.FindByClientIdAsync(_clientsOptions.OmsClient.ClientId) is null)
+        var existingOmsClient = await manager.FindByClientIdAsync(_clientsOptions.OmsClient.ClientId);
+        if (existingOmsClient is null)
         {
             var desktopAppDescriptor = new OpenIddictApplicationDescriptor
             {
@@ -129,6 +130,24 @@ public class DataSeeder
 
             await manager.CreateAsync(desktopAppDescriptor);
         }
+
+        if (existingOmsClient != null)
+        {
+            var descriptor = new OpenIddictApplicationDescriptor();
+            await manager.PopulateAsync(descriptor, existingOmsClient);
+
+            foreach (var uri in _clientsOptions.OmsClient.RedirectUris)
+            {
+                var formattedUri = new Uri(uri);
+                if (!descriptor.RedirectUris.Contains(formattedUri))
+                {
+                    descriptor.RedirectUris.Add(formattedUri);
+                }
+            }
+
+            await manager.UpdateAsync(existingOmsClient, descriptor);
+        }
+
 
         // Seed Order Management System Client (Machine-to-Machine)
         if (await manager.FindByClientIdAsync(_clientsOptions.OmsApi.ClientId) is null)
