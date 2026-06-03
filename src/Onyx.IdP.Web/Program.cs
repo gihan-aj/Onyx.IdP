@@ -8,9 +8,15 @@ using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
+string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+string sharedConfigPath = Path.Combine(appData, "OnyxOms", "system_config.json");
+
+// Add the shared JSON file to the configuration pipeline.
+builder.Configuration.AddJsonFile(sharedConfigPath, optional: true, reloadOnChange: true);
+
 // Add services to the container.
 builder.Services.AddCoreServices();
-builder.Services.AddInfrastructureServices(builder.Configuration.GetConnectionString("DefaultConnection")!);
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Configure Email Settings
 builder.Services.Configure<Onyx.IdP.Core.Settings.EmailSettings>(builder.Configuration.GetSection("EmailSettings"));

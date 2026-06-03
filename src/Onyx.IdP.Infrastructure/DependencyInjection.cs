@@ -1,20 +1,22 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
-using Onyx.IdP.Core.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Onyx.IdP.Core.Entities;
+using Onyx.IdP.Core.Interfaces;
 using Onyx.IdP.Infrastructure.Data;
+using Onyx.IdP.Infrastructure.Data.Services;
 using Onyx.IdP.Infrastructure.Services;
 
 namespace Onyx.IdP.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, string connectionString)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseSqlServer(connectionString);
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             options.UseOpenIddict();
         });
 
@@ -41,6 +43,12 @@ public static class DependencyInjection
 
         services.AddTransient<IEmailSender, MailKitEmailSender>();
         services.AddTransient<DataSeeder>();
+
+        services.AddScoped<IDatabaseBackupService, DatabaseBackupService>();
+
+        services.Configure<BackupSettingsOptions>(configuration.GetSection("BackupSettings"));
+
+        services.AddHostedService<AutomatedBackupHostedService>();
 
         return services;
     }
