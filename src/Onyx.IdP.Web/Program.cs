@@ -2,6 +2,7 @@ using Onyx.IdP.Core;
 using Onyx.IdP.Core.Constants;
 using Onyx.IdP.Infrastructure;
 using Onyx.IdP.Infrastructure.Data;
+using Onyx.IdP.Web.Extensions;
 using OpenIddict.Abstractions;
 using Quartz;
 using System.Security.Cryptography.X509Certificates;
@@ -164,6 +165,18 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+app.MapPost("api/system/shutdown", (IHostApplicationLifetime lifetime, HttpContext context) =>
+{
+    // Security check: Only allow requests originating from the local machine
+    if (!context.Connection.IsLocal())
+    {
+        return Results.Forbid();
+    }
+
+    Task.Run(() => lifetime.StopApplication());
+    return Results.Ok();
+}).ExcludeFromDescription();
 
 // Seed Data
 using (var scope = app.Services.CreateScope())

@@ -44,13 +44,13 @@ namespace Onyx.IdP.Infrastructure.Data
 
                 if (config.IsEnabled && !string.IsNullOrWhiteSpace(config.BackupPath) && config.IntervalHours > 0)
                 {
-                    _logger.LogInformation("Running scheduled database backup...");
-                    await RunBackupAsync(config, stoppingToken);
-
                     try
                     {
                         // Sleep for the configured interval (e.g., 4 hours)
                         await Task.Delay(TimeSpan.FromHours(config.IntervalHours), stoppingToken);
+
+                        _logger.LogInformation("Running scheduled database backup...");
+                        await RunBackupAsync(config, stoppingToken);
                     }
                     catch (TaskCanceledException) { /* App is shutting down */ }
                 }
