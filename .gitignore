@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 appsettings.Production.json
+
+src/Onyx.Oms.Web/InstallerStaging/
