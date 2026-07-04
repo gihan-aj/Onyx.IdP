@@ -1,6 +1,6 @@
 # Onyx Identity Provider (Onyx.IdP)
 
-> A multi-tenant OpenID Connect (OIDC) and OAuth 2.0 identity provider built with ASP.NET Core and OpenIddict — built to give [Onyx.Oms](#) real SSO and tenant management, and as a deliberate deep-dive into how multi-tenant auth actually works.
+> A multi-tenant OpenID Connect (OIDC) and OAuth 2.0 identity provider built with ASP.NET Core and OpenIddict — built to give [Onyx.Oms](https://github.com/gihan-aj/Onyx.Oms) real SSO and tenant management, and as a deliberate deep-dive into how multi-tenant auth actually works.
 
 Onyx.IdP is a centralized authentication server providing OpenID Connect / OAuth 2.0 flows, tenant and user management, and impersonation support for the Onyx OMS ecosystem. It was built specifically to learn multi-tenant identity patterns properly before taking the wider Onyx product to a hosted, multi-business SaaS model.
 
